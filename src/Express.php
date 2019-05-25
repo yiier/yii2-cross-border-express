@@ -131,7 +131,7 @@ class Express
             return $name;
         }
         $name = \ucfirst(\str_replace(['-', '_', ''], '', $name));
-        return __NAMESPACE__ . "\\Platforms\\{$name}Platform";
+        return __NAMESPACE__ . "\\platforms\\{$name}Platform";
     }
 
 
