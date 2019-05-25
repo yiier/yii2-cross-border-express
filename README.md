@@ -2,6 +2,12 @@ International Express for Yii2
 ================
 国际物流接口，目前只支持云途物流和三态速递
 
+[![Latest Stable Version](https://poser.pugx.org/yiier/yii2-int-express/v/stable)](https://packagist.org/packages/yiier/yii2-int-express) 
+[![Total Downloads](https://poser.pugx.org/yiier/yii2-int-express/downloads)](https://packagist.org/packages/yiier/yii2-int-express) 
+[![Latest Unstable Version](https://poser.pugx.org/yiier/yii2-int-express/v/unstable)](https://packagist.org/packages/yiier/yii2-int-express) 
+[![License](https://poser.pugx.org/yiier/yii2-int-express/license)](https://packagist.org/packages/yiier/yii2-int-express)
+
+
 Installation
 ------------
 
