@@ -5,12 +5,12 @@
  * description:
  */
 
-namespace yiier\intExpress\platforms;
+namespace yiier\crossBorderExpress\platforms;
 
-use yiier\intExpress\contracts\Order;
-use yiier\intExpress\contracts\OrderResult;
-use yiier\intExpress\contracts\Transport;
-use yiier\intExpress\exceptions\ExpressException;
+use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderResult;
+use yiier\crossBorderExpress\contracts\Transport;
+use yiier\crossBorderExpress\exceptions\ExpressException;
 
 
 class YuntuPlatform extends Platform

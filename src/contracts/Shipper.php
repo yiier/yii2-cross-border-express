@@ -5,13 +5,13 @@
  * description:
  */
 
-namespace yiier\intExpress\contracts;
+namespace yiier\crossBorderExpress\contracts;
 
 
 /**
  * 发件人
  * Class Shipper
- * @package yiier\express\contracts
+ * @package yiier\crossBorderExpress\contracts
  */
 class Shipper
 {

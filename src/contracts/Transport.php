@@ -5,12 +5,12 @@
  * description:
  */
 
-namespace yiier\intExpress\contracts;
+namespace yiier\crossBorderExpress\contracts;
 
 /**
  * 运输方式
  * Class Transport
- * @package yiier\express\contracts
+ * @package yiier\crossBorderExpress\contracts
  */
 class Transport
 {

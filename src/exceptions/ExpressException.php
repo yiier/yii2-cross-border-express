@@ -5,7 +5,7 @@
  * description:
  */
 
-namespace yiier\intExpress\exceptions;
+namespace yiier\crossBorderExpress\exceptions;
 
 class ExpressException extends \Exception
 {

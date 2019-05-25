@@ -5,13 +5,13 @@
  * description:
  */
 
-namespace yiier\intExpress;
+namespace yiier\crossBorderExpress;
 
 use InvalidArgumentException;
-use yiier\intExpress\contracts\Order;
-use yiier\intExpress\contracts\OrderResult;
-use yiier\intExpress\contracts\PlatformInterface;
-use yiier\intExpress\contracts\Transport;
+use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderResult;
+use yiier\crossBorderExpress\contracts\PlatformInterface;
+use yiier\crossBorderExpress\contracts\Transport;
 
 class Express
 {

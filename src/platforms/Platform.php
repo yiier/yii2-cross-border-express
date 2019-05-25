@@ -5,10 +5,10 @@
  * description:
  */
 
-namespace yiier\intExpress\platforms;
+namespace yiier\crossBorderExpress\platforms;
 
-use yiier\intExpress\Config;
-use yiier\intExpress\contracts\PlatformInterface;
+use yiier\crossBorderExpress\Config;
+use yiier\crossBorderExpress\contracts\PlatformInterface;
 
 abstract class Platform implements PlatformInterface
 {

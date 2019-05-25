@@ -1,11 +1,11 @@
-International Express for Yii2
+Cross Border Express for Yii2
 ================
-国际物流接口，目前只支持云途物流和三态速递
+跨境物流接口，目前只支持云途物流和三态速递
 
-[![Latest Stable Version](https://poser.pugx.org/yiier/yii2-int-express/v/stable)](https://packagist.org/packages/yiier/yii2-int-express) 
-[![Total Downloads](https://poser.pugx.org/yiier/yii2-int-express/downloads)](https://packagist.org/packages/yiier/yii2-int-express) 
-[![Latest Unstable Version](https://poser.pugx.org/yiier/yii2-int-express/v/unstable)](https://packagist.org/packages/yiier/yii2-int-express) 
-[![License](https://poser.pugx.org/yiier/yii2-int-express/license)](https://packagist.org/packages/yiier/yii2-int-express)
+[![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-expres/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
+[![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-expres/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
+[![Latest Unstable Version](https://poser.pugx.org/yiier/yii2-cross-border-expres/v/unstable)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
+[![License](https://poser.pugx.org/yiier/yii2-cross-border-expres/license)](https://packagist.org/packages/yiier/yii2-cross-border-expres)
 
 
 Installation
@@ -16,13 +16,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist yiier/yii2-int-express "*"
+php composer.phar require --prefer-dist yiier/yii2-cross-border-expres "*"
 ```
 
 or add
 
 ```
-"yiier/yii2-int-express": "*"
+"yiier/yii2-cross-border-expres": "*"
 ```
 
 to the require section of your `composer.json` file.
@@ -55,7 +55,7 @@ $config = [
     ],
 ];
 
-$express = new \yiier\express\Express($config, 'santai');
+$express = new \yiier\crossBorderExpress\Express($config, 'santai');
     
 ```
 
@@ -64,11 +64,11 @@ $express = new \yiier\express\Express($config, 'santai');
 
 ```php
 <?php
-$expressOrder = new \yiier\express\contracts\Order();
+$expressOrder = new \yiier\crossBorderExpress\contracts\Order();
 $expressOrder->customerOrderNo = 'xxx';
 $expressOrder->transportCode = 'xxx';
 
-$goods[] = new \yiier\express\contracts\Goods();
+$goods[] = new \yiier\crossBorderExpress\contracts\Goods();
 $goods->description = 'xxx';
 $goods->cnDescription = 'xxx';
 $goods->quantity = 'xxx';
@@ -85,7 +85,7 @@ $expressOrder->isRemoteConfirm = 1; // 是否同意收偏远费
 $expressOrder->isReturn = 1; // 是否退件
 $expressOrder->withBattery = 0; // 是否带电池
 
-$package = new \yiier\express\contracts\Package();
+$package = new \yiier\crossBorderExpress\contracts\Package();
 $package->description = 'xxxx';
 $package->quantity = 1;
 $package->weight = 'xxx';
@@ -93,7 +93,7 @@ $package->declareWorth = 1; // 1美元
 $expressOrder->package = $package;
 
 
-$recipient = new \yiier\express\contracts\Recipient();
+$recipient = new \yiier\crossBorderExpress\contracts\Recipient();
 $recipient->countryCode = 'xx';
 $recipient->name = 'xx';
 $recipient->address = 'xx';
@@ -103,7 +103,7 @@ $recipient->zip = 'xx';
 $recipient->phone = 'xx';
 $expressOrder->recipient = $recipient;
 
-$shipper = new \yiier\express\contracts\Shipper();
+$shipper = new \yiier\crossBorderExpress\contracts\Shipper();
 $shipper->countryCode = 'CN';
 $shipper->name = 'xxx';
 $shipper->company = 'xxx';

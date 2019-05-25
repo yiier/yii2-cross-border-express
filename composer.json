@@ -23,7 +23,7 @@
   },
   "autoload": {
     "psr-4": {
-      "yiier\\intExpress\\": "src"
+      "yiier\\crossBorderExpress\\": "src"
     }
   }
 }

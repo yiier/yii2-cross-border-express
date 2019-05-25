@@ -5,10 +5,10 @@
  * description:
  */
 
-namespace yiier\intExpress\contracts;
+namespace yiier\crossBorderExpress\contracts;
 
 use GuzzleHttp\Client;
-use yiier\intExpress\exceptions\ExpressException;
+use yiier\crossBorderExpress\exceptions\ExpressException;
 
 interface PlatformInterface
 {

@@ -5,7 +5,7 @@
  * description:
  */
 
-namespace yiier\intExpress\platforms;
+namespace yiier\crossBorderExpress\platforms;
 
 
 class PlatformsName

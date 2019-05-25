@@ -5,12 +5,12 @@
  * description:
  */
 
-namespace yiier\intExpress\contracts;
+namespace yiier\crossBorderExpress\contracts;
 
 /**
  * 包裹内的物品
  * Class Goods
- * @package yiier\express\contracts
+ * @package yiier\crossBorderExpress\contracts
  */
 class Goods
 {
