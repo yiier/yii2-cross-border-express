@@ -2,10 +2,10 @@ Cross Border Express for Yii2
 ================
 跨境物流接口，目前只支持云途物流和三态速递
 
-[![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-expres/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
-[![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-expres/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
-[![Latest Unstable Version](https://poser.pugx.org/yiier/yii2-cross-border-expres/v/unstable)](https://packagist.org/packages/yiier/yii2-cross-border-expres) 
-[![License](https://poser.pugx.org/yiier/yii2-cross-border-expres/license)](https://packagist.org/packages/yiier/yii2-cross-border-expres)
+[![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
+[![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
+[![Latest Unstable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/unstable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
+[![License](https://poser.pugx.org/yiier/yii2-cross-border-express/license)](https://packagist.org/packages/yiier/yii2-cross-border-express)
 
 
 Installation
@@ -16,13 +16,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist yiier/yii2-cross-border-expres "*"
+php composer.phar require --prefer-dist yiier/yii2-cross-border-express "*"
 ```
 
 or add
 
 ```
-"yiier/yii2-cross-border-expres": "*"
+"yiier/yii2-cross-border-express": "*"
 ```
 
 to the require section of your `composer.json` file.
