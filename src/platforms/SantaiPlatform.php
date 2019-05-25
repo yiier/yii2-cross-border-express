@@ -11,8 +11,8 @@ use nusoap_client;
 use yiier\intExpress\contracts\Order;
 use yiier\intExpress\contracts\OrderResult;
 use yiier\intExpress\contracts\Transport;
+use yiier\intExpress\CountryCodes;
 use yiier\intExpress\exceptions\ExpressException;
-use yiier\intExpress\helpers\CountryCodes;
 
 
 class SantaiPlatform extends Platform

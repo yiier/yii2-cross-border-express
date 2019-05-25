@@ -5,7 +5,7 @@
  * description:
  */
 
-namespace yiier\intExpress\helpers;
+namespace yiier\intExpress;
 
 class CountryCodes
 {

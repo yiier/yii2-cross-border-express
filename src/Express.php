@@ -51,8 +51,6 @@ class Express
     public function getTransportsByCountryCode(string $countryCode): array
     {
         $platform = $this->platform($this->platformName);
-//        $platform = new SanTaiPlatform($this->config->get('platforms.santai'));
-//        $platform = new YuntuPlatform($this->config->get('platforms.yuntu'));
         return $platform->getTransportsByCountryCode($countryCode);
     }
 
@@ -64,8 +62,6 @@ class Express
     public function createOrder(Order $order): OrderResult
     {
         $platform = $this->platform($this->platformName);
-//        $platform = new YuntuPlatform($this->config->get('platforms.yuntu'));
-//        $platform = new SanTaiPlatform($this->config->get('platforms.santai'));
         return $platform->createOrder($order);
     }
 
@@ -79,8 +75,6 @@ class Express
     public function getPrintUrl(string $orderNumber): string
     {
         $platform = $this->platform($this->platformName);
-//        $platform = new YuntuPlatform($this->config->get('platforms.yuntu'));
-//        $platform = new SanTaiPlatform($this->config->get('platforms.santai'));
         return $platform->getPrintUrl($orderNumber);
     }
 

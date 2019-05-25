@@ -1,24 +1,29 @@
 {
-    "name": "yiier/yii2-int-express",
-    "description": "快递接口",
-    "type": "yii2-extension",
-    "keywords": ["yii2","extension"],
-    "license": "BSD-4-Clause",
-    "authors": [
-        {
-            "name": "forecho",
-            "email": "caizhenghai@gmail.com"
-        }
-    ],
-    "require": {
-        "php": ">=7.1",
-        "ext-simplexml": "*",
-        "guzzlehttp/guzzle": "^6.3",
-        "yiisoft/yii2": "~2.0.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "yiier\\express\\": "src"
-        }
+  "name": "yiier/yii2-int-express",
+  "description": "国际快递接口",
+  "type": "yii2-extension",
+  "keywords": [
+    "yii2",
+    "extension",
+    "express"
+  ],
+  "license": "BSD-4-Clause",
+  "authors": [
+    {
+      "name": "forecho",
+      "email": "caizhenghai@gmail.com"
     }
+  ],
+  "require": {
+    "php": ">=7.1",
+    "ext-simplexml": "*",
+    "guzzlehttp/guzzle": "^6.3",
+    "yiisoft/yii2": "~2.0.0",
+    "econea/nusoap": "^0.9.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "yiier\\intExpress\\": "src"
+    }
+  }
 }
