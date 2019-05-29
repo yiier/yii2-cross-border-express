@@ -47,6 +47,15 @@ interface PlatformInterface
      * Get platform print url
      * @param string $orderNumber
      * @return string
+     * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber);
+    public function getPrintUrl(string $orderNumber): string;
+
+    /**
+     * Get platform order fee
+     * @param string $orderNumber
+     * @return OrderFee
+     * @throws ExpressException
+     */
+    public function getOrderFee(string $orderNumber): OrderFee;
 }

@@ -9,6 +9,7 @@ namespace yiier\crossBorderExpress\platforms;
 
 use nusoap_client;
 use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\CountryCodes;
@@ -18,14 +19,20 @@ use yiier\crossBorderExpress\exceptions\ExpressException;
 class SantaiPlatform extends Platform
 {
 
-    const ENDPOINT_TEMPLATE = 'http://www.sendfromchina.com/ishipsvc/web-service?wsdl';
+    const ENDPOINT = 'http://www.sendfromchina.com/ishipsvc/web-service?wsdl';
+
+    /**
+     * @var string
+     */
+    protected $endpoint;
 
     /**
      * @return nusoap_client
      */
     public function getClient()
     {
-        $client = new nusoap_client(self::ENDPOINT_TEMPLATE, 'wsdl');
+        $this->endpoint = $this->endpoint ?: self::ENDPOINT;
+        $client = new nusoap_client($this->endpoint, 'wsdl');
         $client->soap_defencoding = 'UTF-8';
         $client->decode_utf8 = false;
         return $client;
@@ -72,8 +79,8 @@ class SantaiPlatform extends Platform
         if (isset($result['orderActionStatus'])) {
             if ($result['orderActionStatus'] == 'Y') {
                 $orderResult->expressTrackingNumber = $result['trackingNumber'];
-                $orderResult->expressNumber = $result['orderCode'];
-                $orderResult->expressAgentNumber = self::dataGet($result, 'trackingNumberUsps');
+                $orderResult->expressNumber = self::dataGet($result, 'trackingNumberUsps');
+                $orderResult->expressAgentNumber = $result['orderCode'];
             } else {
                 throw new ExpressException($result['note']);
             }
@@ -83,6 +90,54 @@ class SantaiPlatform extends Platform
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
         return $orderResult;
+    }
+
+    /**
+     * Get platform print url
+     * @param string $orderNumber
+     * @return string
+     */
+    public function getPrintUrl(string $orderNumber): string
+    {
+        $host = 'http://www.sendfromchina.com/api/label';
+        $printType = 1;
+        $fileType = 'pdf';
+
+        return "{$host}?orderCodeList={$orderNumber}&printType={$printType}&print_type={$fileType}";
+    }
+
+
+    /**
+     * Get platform order fee
+     * @param string $orderNumber
+     * @return OrderFee
+     * @throws \Exception
+     */
+    public function getOrderFee(string $orderNumber): OrderFee
+    {
+        $this->endpoint = 'http://www.sendfromchina.com/ishipsvc/finance-lists-service?wsdl';
+        $client = $this->getClient();
+        $query = [
+            'code' => ltrim($orderNumber, 'SFC3'),
+            'startDate' => date('Y-m-d', strtotime("-30 days")),
+            'endDate' => date('Y-m-d'),
+        ];
+        $parameter = array_merge($this->getAuthParams(), ['orderFeeDetailRequestInfo' => $query]);
+        $result = $client->call('orderFeeDetail', $parameter);
+        if (isset($result['status']) && $result['status'] === "1" && isset($result['lists'])) {
+            $orderFee = new OrderFee();
+            $orderFee->chargeWeight = $result['lists']['weight'];
+            $orderFee->freight = $result['lists']['shipping_cost'];
+            $orderFee->fuelCosts = $result['lists']['addons'];
+            $orderFee->registrationFee = $result['lists']['reg_fee'];
+            $orderFee->processingFee = $result['lists']['according_handling'];
+            $orderFee->otherFee = $result['lists']['rests_fee'];
+            $orderFee->totalFee = $result['lists']['total_shipping_cost'];
+            $orderFee->customerOrderNumber = $result['lists']['customer_order_code'];
+            $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+            return $orderFee;
+        }
+        throw new ExpressException('获取订单费用失败', (array)$result);
     }
 
 
@@ -160,21 +215,6 @@ class SantaiPlatform extends Platform
     }
 
     /**
-     * Get platform print url
-     * @param string $orderNumber
-     * @return string
-     */
-    public function getPrintUrl(string $orderNumber)
-    {
-        $host = 'http://www.sendfromchina.com/api/label';
-        $printType = 1;
-        $fileType = 'pdf';
-        // http://www.sendfromchina.com/api/label?orderCodeList=QCFF01204060012& printType=1 &print_type=html&printSize=3&printSort=1
-
-        return "{$host}?orderCodeList={$orderNumber}&printType={$printType}&print_type={$fileType}";
-    }
-
-    /**
      * @return array
      */
     protected function getAuthParams()
@@ -187,5 +227,4 @@ class SantaiPlatform extends Platform
             ],
         ];
     }
-
 }

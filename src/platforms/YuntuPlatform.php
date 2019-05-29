@@ -8,6 +8,7 @@
 namespace yiier\crossBorderExpress\platforms;
 
 use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\exceptions\ExpressException;
@@ -107,6 +108,60 @@ class YuntuPlatform extends Platform
 
 
     /**
+     * Get print url
+     * @param string $orderNumber
+     * @return string
+     * @throws \Exception
+     */
+    public function getPrintUrl(string $orderNumber): string
+    {
+        $this->host = 'http://api.yunexpress.com/LMS.API.Lable/Api';
+        $api = '/PrintUrl';
+        $data = [$orderNumber];
+        $body = ['body' => json_encode($data)];
+
+        $response = $this->client->post($this->host . $api, $body);
+
+        $result = $this->parseResult($response->getBody());
+
+        try {
+            return $result[0]['Url'];
+        } catch (\Exception $e) {
+            throw new ExpressException('获取打印地址失败', (array)$result);
+        }
+    }
+
+    /**
+     * Get platform order fee
+     * @param string $orderNumber
+     * @return OrderFee
+     * @throws \Exception
+     */
+    public function getOrderFee(string $orderNumber): OrderFee
+    {
+        $api = '/WayBill/GetShippingFeeDetail';
+        $query = [
+            'query' => ['wayBillNumber' => $orderNumber],
+        ];
+
+        $response = $this->client->get($this->host . $api, $query);
+
+        $result = $this->parseResult($response->getBody());
+
+        $orderFee = new OrderFee();
+        $orderFee->customerOrderNumber = $result['CustomerOrderNumber'];
+        $orderFee->chargeWeight = $result['ChargeWeight'];
+        $orderFee->freight = $result['Freight'];
+        $orderFee->fuelCosts = $result['FuelSurcharge'];
+        $orderFee->registrationFee = $result['RegistrationFee'];
+        $orderFee->processingFee = $result['ProcessingFee'];
+        $orderFee->otherFee = $result['OtherFee'];
+        $orderFee->totalFee = $result['TotalFee'];
+        $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+        return $orderFee;
+    }
+
+    /**
      * @param Order $orderClass
      * @return array
      */
@@ -168,29 +223,6 @@ class YuntuPlatform extends Platform
         return array_merge($order, ['SenderInfo' => $shipper], ['ShippingInfo' => $recipient], $package);
     }
 
-    /**
-     * Get print url
-     * @param string $orderNumber
-     * @return string
-     * @throws \Exception
-     */
-    public function getPrintUrl(string $orderNumber): string
-    {
-        $this->host = 'http://api.yunexpress.com/LMS.API.Lable/Api';
-        $api = '/PrintUrl';
-        $data = [$orderNumber];
-        $body = ['body' => json_encode($data)];
-
-        $response = $this->client->post($this->host . $api, $body);
-
-        $result = $this->parseResult($response->getBody());
-
-        try {
-            return $result[0]['Url'];
-        } catch (\Exception $e) {
-            throw new ExpressException('获取打印地址失败', (array)$result);
-        }
-    }
 
     /**
      * @return string
@@ -222,7 +254,7 @@ class YuntuPlatform extends Platform
             if (!empty($arr['Item'][0]['Feedback'])) {
                 $message = $arr['Item'][0]['Feedback'];
             }
-            throw new \Exception($message, $arr['ResultCode']);
+            throw new ExpressException($message, $arr['ResultCode']);
         }
 
         return $arr['Item'];

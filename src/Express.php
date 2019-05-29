@@ -9,6 +9,7 @@ namespace yiier\crossBorderExpress;
 
 use InvalidArgumentException;
 use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\PlatformInterface;
 use yiier\crossBorderExpress\contracts\Transport;
@@ -65,7 +66,6 @@ class Express
         return $platform->createOrder($order);
     }
 
-
     /**
      * Get platform print url
      * @param string $orderNumber
@@ -78,14 +78,22 @@ class Express
         return $platform->getPrintUrl($orderNumber);
     }
 
+    /**
+     * Get platform order fee
+     * @param string $trackingNumber
+     * @return OrderFee
+     * @throws \Exception
+     */
+    public function getOrderFee(string $trackingNumber): OrderFee
+    {
+        $platform = $this->platform($this->platformName);
+        return $platform->getOrderFee($trackingNumber);
+    }
 
     /**
      * Create a platform.
-     *
      * @param string $name
-     *
      * @return PlatformInterface
-     *
      * @throws InvalidArgumentException
      */
     public function platform($name)
@@ -99,7 +107,6 @@ class Express
 
     /**
      * Create a new driver instance.
-     *
      * @param string $name
      * @return PlatformInterface
      * @throws InvalidArgumentException
@@ -117,12 +124,9 @@ class Express
         return $platform;
     }
 
-
     /**
      * Format platform name.
-     *
      * @param string $name
-     *
      * @return string
      */
     protected function formatPlatformClassName($name)
@@ -137,12 +141,9 @@ class Express
 
     /**
      * Make Platform instance.
-     *
      * @param string $platform
      * @param array $config
-     *
      * @return PlatformInterface
-     *
      * @throws InvalidArgumentException
      */
     protected function makePlatform($platform, $config)
