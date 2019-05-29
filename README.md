@@ -148,3 +148,12 @@ $orderNumber = 'xxx';
 $express->getPrintUrl($orderNumber);
 ```
 
+### 获取订单详细费用
+
+```php
+<?php
+$orderNumber = 'xxx';
+$express->getOrderFee($orderNumber);
+```
+
+

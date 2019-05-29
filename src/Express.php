@@ -59,6 +59,7 @@ class Express
      * @param Order $order
      * @return OrderResult
      * @throws exceptions\ExpressException
+     * @throws \Exception
      */
     public function createOrder(Order $order): OrderResult
     {
@@ -70,6 +71,7 @@ class Express
      * Get platform print url
      * @param string $orderNumber
      * @return string
+     * @throws exceptions\ExpressException
      * @throws \Exception
      */
     public function getPrintUrl(string $orderNumber): string
@@ -82,6 +84,7 @@ class Express
      * Get platform order fee
      * @param string $trackingNumber
      * @return OrderFee
+     * @throws exceptions\ExpressException
      * @throws \Exception
      */
     public function getOrderFee(string $trackingNumber): OrderFee
