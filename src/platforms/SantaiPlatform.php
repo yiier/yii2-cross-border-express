@@ -119,7 +119,7 @@ class SantaiPlatform extends Platform
         $client = $this->getClient();
         $query = [
             'code' => ltrim($orderNumber, 'SFC3'),
-            'startDate' => date('Y-m-d', strtotime("-30 days")),
+            'startDate' => date('Y-m-d', strtotime("-2 years")),
             'endDate' => date('Y-m-d'),
         ];
         $parameter = array_merge($this->getAuthParams(), ['orderFeeDetailRequestInfo' => $query]);
