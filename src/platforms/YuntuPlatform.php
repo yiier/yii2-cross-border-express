@@ -150,6 +150,7 @@ class YuntuPlatform extends Platform
 
         $orderFee = new OrderFee();
         $orderFee->customerOrderNumber = $result['CustomerOrderNumber'];
+        $orderFee->orderNumber = $result['WayBillNumber'];
         $orderFee->chargeWeight = $result['ChargeWeight'];
         $orderFee->freight = $result['Freight'];
         $orderFee->fuelCosts = $result['FuelSurcharge'];
@@ -157,6 +158,9 @@ class YuntuPlatform extends Platform
         $orderFee->processingFee = $result['ProcessingFee'];
         $orderFee->otherFee = $result['OtherFee'];
         $orderFee->totalFee = $result['TotalFee'];
+        $orderFee->country = $result['CountryName'];
+        $orderFee->transportName = $result['ShippingMethodName'];
+        $orderFee->datetime = $result['OccurrenceTime'];
         $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
         return $orderFee;
     }

@@ -58,6 +58,36 @@ class OrderFee
     public $customerOrderNumber;
 
     /**
+     * 物流订单号
+     * @var string
+     */
+    public $orderNumber;
+
+    /**
+     * 国家
+     * @var string
+     */
+    public $country;
+
+    /**
+     * 运输方式代码，非必返回
+     * @var string
+     */
+    public $transportCode;
+
+    /**
+     * 运输方式名称，非必返回
+     * @var string
+     */
+    public $transportName;
+
+    /**
+     * UTC 时间，非必返回，eg: 2019-03-02T18:26:25
+     * @var string
+     */
+    public $datetime;
+
+    /**
      * 接口返回数据的 json 格式，非必填
      * @var string
      */

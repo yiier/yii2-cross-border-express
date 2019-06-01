@@ -127,6 +127,7 @@ class SantaiPlatform extends Platform
         if (isset($result['status']) && $result['status'] === "1" && isset($result['lists'])) {
             $orderFee = new OrderFee();
             $orderFee->chargeWeight = $result['lists']['weight'];
+            $orderFee->orderNumber = $result['lists']['AeCode'];
             $orderFee->freight = $result['lists']['shipping_cost'];
             $orderFee->fuelCosts = $result['lists']['addons'];
             $orderFee->registrationFee = $result['lists']['reg_fee'];
@@ -134,6 +135,9 @@ class SantaiPlatform extends Platform
             $orderFee->otherFee = $result['lists']['rests_fee'];
             $orderFee->totalFee = $result['lists']['total_shipping_cost'];
             $orderFee->customerOrderNumber = $result['lists']['customer_order_code'];
+            $orderFee->country = $result['lists']['cn_name'];
+            $orderFee->transportCode = $result['lists']['ship_type_code'];
+            $orderFee->datetime = date('c', strtotime($result['lists']['deduct_refund_time']));
             $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
             return $orderFee;
         }
