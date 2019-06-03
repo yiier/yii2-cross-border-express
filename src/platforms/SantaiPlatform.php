@@ -79,8 +79,8 @@ class SantaiPlatform extends Platform
         if (isset($result['orderActionStatus'])) {
             if ($result['orderActionStatus'] == 'Y') {
                 $orderResult->expressTrackingNumber = $result['trackingNumber'];
-                $orderResult->expressNumber = self::dataGet($result, 'trackingNumberUsps');
-                $orderResult->expressAgentNumber = $result['orderCode'];
+                $orderResult->expressAgentNumber = self::dataGet($result, 'trackingNumberUsps');
+                $orderResult->expressNumber = $result['orderCode'];
             } else {
                 throw new ExpressException($result['note']);
             }
