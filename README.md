@@ -77,6 +77,7 @@ $goods->hsCode = 'xxx';
 $goods->enMaterial = 'cotton';
 $goods->cnMaterial = '棉';
 $goods->worth = 1; // 1美元;
+$goods->sku = 'xxx'; // 云途某些渠道需要
         
 $expressOrder->goods = $goods;
 $expressOrder->evaluate = 1; // 1美元

@@ -212,6 +212,7 @@ class YuntuPlatform extends Platform
                 'UnitPrice' => $value->worth,
                 'UnitWeight' => $value->weight,
                 'HSCode' => $value->hsCode,
+                'SKU' => $value->sku,
             ];
         }
 

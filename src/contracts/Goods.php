@@ -62,4 +62,11 @@ class Goods
      */
     public $weight;
 
+
+    /**
+     * 物品 SKU，云途某些渠道必填
+     * @var string
+     */
+    public $sku;
+
 }
