@@ -117,7 +117,7 @@ class Express
     protected function createPlatform($name)
     {
         $className = $this->formatPlatformClassName($name);
-        $platform = $this->makePlatform($className, $this->config->get("platforms.{$name}", []));
+        $platform = $this->makePlatform($className, $this->getPlatformSettings($name));
 
         if (!($platform instanceof PlatformInterface)) {
             throw new InvalidArgumentException(
@@ -163,7 +163,10 @@ class Express
      */
     protected function getPlatformSettings(string $platform)
     {
-        $globalSettings = $this->config->get("platforms.{$platform}", []);
-        return $globalSettings;
+        $globalSettings = [
+            'timeout' => $this->config->get('timeout'),
+        ];
+        $settings = array_merge($globalSettings, $this->config->get("platforms.{$platform}", []));
+        return $settings;
     }
 }
