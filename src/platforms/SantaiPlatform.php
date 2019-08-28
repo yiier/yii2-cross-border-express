@@ -215,6 +215,25 @@ class SantaiPlatform extends Platform
             'withBattery' => $orderClass->withBattery,
         ];
 
+        $specialTransportCodes = [
+            'HKDHL',
+            'HKDHL1',
+            'CNUPS',
+            'SZUPS',
+            'HKUPS',
+            'SGDHL',
+            'EUTLP',
+            'CNFEDEX',
+            'HKFEDEX',
+            'CNS FEDEX',
+            'HKSFEDEX',
+            'EUEXP3'
+        ];
+
+        if (in_array($orderClass->transportCode, $specialTransportCodes)) {
+            $order['pieceNumber'] = $orderClass->pieceNumber ?: 1;
+        }
+
         return array_merge($order, $shipper, $recipient, $package);
     }
 

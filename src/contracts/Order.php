@@ -76,4 +76,10 @@ class Order
      */
     public $recipient;
 
+    /**
+     * 每票的件数, 三态有这些方式 HKDHL,HKDHL1,CNUPS,SZUPS,HKUPS, SGDHL,EUTLP,CNFEDEX,HKFEDEX,CNS FEDEX,HKSFEDEX,EUEXP3 必填。默认是 1
+     * @var integer
+     */
+    public $pieceNumber;
+
 }
