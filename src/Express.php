@@ -9,11 +9,17 @@ namespace yiier\crossBorderExpress;
 
 use InvalidArgumentException;
 use yiier\crossBorderExpress\contracts\Order;
-use yiier\crossBorderExpress\contracts\OrderFee;
-use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\PlatformInterface;
-use yiier\crossBorderExpress\contracts\Transport;
 
+/**
+ * Class Express
+ * @method createOrder(Order $order): OrderResult
+ * @method getPrintUrl(string $orderNumber): string
+ * @method getTransportsByCountryCode(string $countryCode): array
+ * @method getOrderFee(string $trackingNumber): OrderFee
+ * @method getOrderAllFee(array $query = []): OrderFee[]
+ * @package yiier\crossBorderExpress
+ */
 class Express
 {
     /**
@@ -43,54 +49,18 @@ class Express
         $this->platformName = $platformName;
     }
 
-
     /**
-     * @param string $countryCode
-     * @return Transport[]
-     * @throws \Exception
+     * @param $name
+     * @param $arguments
+     *
+     * @return mixed
+     *
+     * @throws InvalidArgumentException
      */
-    public function getTransportsByCountryCode(string $countryCode): array
+    public function make($name, $arguments)
     {
         $platform = $this->platform($this->platformName);
-        return $platform->getTransportsByCountryCode($countryCode);
-    }
-
-    /**
-     * @param Order $order
-     * @return OrderResult
-     * @throws exceptions\ExpressException
-     * @throws \Exception
-     */
-    public function createOrder(Order $order): OrderResult
-    {
-        $platform = $this->platform($this->platformName);
-        return $platform->createOrder($order);
-    }
-
-    /**
-     * Get platform print url
-     * @param string $orderNumber
-     * @return string
-     * @throws exceptions\ExpressException
-     * @throws \Exception
-     */
-    public function getPrintUrl(string $orderNumber): string
-    {
-        $platform = $this->platform($this->platformName);
-        return $platform->getPrintUrl($orderNumber);
-    }
-
-    /**
-     * Get platform order fee
-     * @param string $trackingNumber
-     * @return OrderFee
-     * @throws exceptions\ExpressException
-     * @throws \Exception
-     */
-    public function getOrderFee(string $trackingNumber): OrderFee
-    {
-        $platform = $this->platform($this->platformName);
-        return $platform->getOrderFee($trackingNumber);
+        return call_user_func([$platform, $name], ...$arguments);
     }
 
     /**
@@ -168,5 +138,15 @@ class Express
         ];
         $settings = array_merge($globalSettings, $this->config->get("platforms.{$platform}", []));
         return $settings;
+    }
+
+    /**
+     * @param $name
+     * @param $arguments
+     * @return mixed
+     */
+    public function __call($name, $arguments)
+    {
+        return $this->make($name, $arguments);
     }
 }

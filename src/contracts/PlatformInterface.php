@@ -8,6 +8,7 @@
 namespace yiier\crossBorderExpress\contracts;
 
 use GuzzleHttp\Client;
+use nusoap_client;
 use yiier\crossBorderExpress\exceptions\ExpressException;
 
 interface PlatformInterface
@@ -21,7 +22,7 @@ interface PlatformInterface
 
     /**
      * Get platform client.
-     * @return string|Client
+     * @return nusoap_client|Client
      */
     public function getClient();
 
@@ -58,4 +59,12 @@ interface PlatformInterface
      * @throws ExpressException
      */
     public function getOrderFee(string $orderNumber): OrderFee;
+
+
+    /**
+     * Get platform all order fee
+     * @param array $query
+     * @return OrderFee[]
+     */
+    public function getOrderAllFee(array $query = []): array;
 }

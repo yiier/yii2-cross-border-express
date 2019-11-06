@@ -8,13 +8,13 @@
 namespace yiier\crossBorderExpress\platforms;
 
 use nusoap_client;
+use yii\helpers\ArrayHelper;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\CountryCodes;
 use yiier\crossBorderExpress\exceptions\ExpressException;
-
 
 class SantaiPlatform extends Platform
 {
@@ -32,7 +32,7 @@ class SantaiPlatform extends Platform
     public function getClient()
     {
         $this->endpoint = $this->endpoint ?: self::ENDPOINT;
-        $client = new nusoap_client($this->endpoint, 'wsdl');
+        $client = new nusoap_client($this->endpoint, true);
         $client->soap_defencoding = 'UTF-8';
         $client->decode_utf8 = false;
         return $client;
@@ -140,6 +140,51 @@ class SantaiPlatform extends Platform
             $orderFee->datetime = date('c', strtotime($result['lists']['deduct_refund_time']));
             $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
             return $orderFee;
+        }
+        throw new ExpressException('获取订单费用失败', (array)$result);
+    }
+
+
+    /**
+     * Get platform all order fee
+     * @param array $query
+     * @return OrderFee[]
+     * @throws ExpressException
+     */
+    public function getOrderAllFee(array $query = []): array
+    {
+        $this->endpoint = 'http://www.sfcservice.com/ishipsvc/web-service?wsdl';
+        $client = $this->getClient();
+        $defaultQuery = [
+            'startime' => date('Y-m-d H:i:s', strtotime("-3 months")),
+            'endtime' => date('Y-m-d H:i:s'),
+            'page' => 1,
+        ];
+        $parameter = array_merge($this->getAuthParams(), array_merge($defaultQuery, $query));
+        $result = $client->call('getFeeByTime', $parameter);
+        if (isset($result['ask']) && $result['ask'] === "Success" && isset($result['data'])) {
+            $data = (array)$result['data'];
+            $orderFee = new OrderFee();
+            $items = [];
+            foreach ($data as $kay => $datum) {
+                $_orderFee = clone $orderFee;
+                $_orderFee->chargeWeight = $datum['feeWeight'];
+                $_orderFee->orderNumber = $datum['orderCode'];
+                $_orderFee->freight = $datum['baseFee'];
+                $_orderFee->fuelCosts = 0;
+                $_orderFee->registrationFee = $datum['regFee'];
+                $_orderFee->processingFee = $datum['dealFee'];
+                $_orderFee->otherFee = isset($datum['otherFees']) ?
+                    array_sum(ArrayHelper::getColumn($datum['otherFees'], 'total_fee')) : 0;
+                $_orderFee->totalFee = $datum['totalFee'];
+                $_orderFee->customerOrderNumber = $datum['customerOrderNo'];
+                $_orderFee->country = '';
+                $_orderFee->transportCode = $datum['shipTypeCode'];
+                $_orderFee->datetime = date('c', strtotime($datum['chargebackTime']));
+                $_orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+                $items[$kay] = $_orderFee;
+            }
+            return $items;
         }
         throw new ExpressException('获取订单费用失败', (array)$result);
     }

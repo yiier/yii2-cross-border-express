@@ -166,6 +166,17 @@ class YuntuPlatform extends Platform
     }
 
     /**
+     * Get platform all order fee
+     * 云途暂未提供此方法
+     * @param array $query
+     * @return OrderFee[]
+     */
+    public function getOrderAllFee(array $query = []): array
+    {
+        return [];
+    }
+
+    /**
      * @param Order $orderClass
      * @return array
      */
@@ -241,9 +252,9 @@ class YuntuPlatform extends Platform
     /**
      * Parse result
      *
-     * @param  string $result
-     * @throws \Exception
+     * @param string $result
      * @return array
+     * @throws \Exception
      */
     protected function parseResult($result)
     {

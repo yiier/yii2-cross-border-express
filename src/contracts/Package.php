@@ -33,25 +33,25 @@ class Package
     public $declareWorth;
 
     /**
-     * 包裹内物品重量，非必填
+     * 包裹内物品重量 单位KG，非必填
      * @var float
      */
     public $weight;
 
     /**
-     * 包裹内物品长度，非必填
+     * 包裹内物品长度 单位CM ，非必填
      * @var float
      */
     public $length;
 
     /**
-     * 包裹内物品申宽度，非必填
+     * 包裹内物品申宽度 单位CM，非必填
      * @var float
      */
     public $width;
 
     /**
-     * 包裹内物品高度，非必填
+     * 包裹内物品高度 单位CM，非必填
      * @var float
      */
     public $height;

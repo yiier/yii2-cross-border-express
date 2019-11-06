@@ -23,7 +23,7 @@ class Order
     public $transportCode;
 
     /**
-     * 投保价值，必填
+     * 投保价值 单位美元，必填
      * @var float
      */
     public $evaluate;
@@ -44,7 +44,7 @@ class Order
      * 是否退件 0 否，1 是，默认0，部分支持退件
      * @var integer
      */
-    public $isReturn;
+    public $isReturn = 0;
 
     /**
      * 是否带电池，1 是，默认 0
