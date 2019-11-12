@@ -126,7 +126,7 @@ class SantaiPlatform extends Platform
         $result = $client->call('orderFeeDetail', $parameter);
         if (isset($result['status']) && $result['status'] === "1" && isset($result['lists'])) {
             $orderFee = new OrderFee();
-            $orderFee->chargeWeight = $result['lists']['weight'];
+            $orderFee->chargeWeight = ArrayHelper::getValue($result, 'lists.weight', 0);
             $orderFee->orderNumber = $result['lists']['AeCode'];
             $orderFee->freight = $result['lists']['shipping_cost'];
             $orderFee->fuelCosts = $result['lists']['addons'];
