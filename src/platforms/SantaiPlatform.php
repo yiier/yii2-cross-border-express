@@ -166,7 +166,8 @@ class SantaiPlatform extends Platform
             $data = (array)$result['data'];
             $orderFee = new OrderFee();
             $items = [];
-            foreach ($data as $kay => $datum) {
+            unset($result['data']);
+            foreach ($data as $key => $datum) {
                 $_orderFee = clone $orderFee;
                 $_orderFee->chargeWeight = $datum['feeWeight'];
                 $_orderFee->orderNumber = $datum['orderCode'];
@@ -181,8 +182,8 @@ class SantaiPlatform extends Platform
                 $_orderFee->country = '';
                 $_orderFee->transportCode = $datum['shipTypeCode'];
                 $_orderFee->datetime = date('c', strtotime($datum['chargebackTime']));
-                $_orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
-                $items[$kay] = $_orderFee;
+                $_orderFee->data = json_encode($result + ['data' => $datum], JSON_UNESCAPED_UNICODE);
+                $items[$key] = $_orderFee;
             }
             return $items;
         }
