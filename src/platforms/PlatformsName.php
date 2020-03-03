@@ -12,4 +12,5 @@ class PlatformsName
 {
     const SAN_TAI_PLATFORM = 'santai';
     const YUN_TU_PLATFORM = 'yuntu';
+    const EQUICK_PLATFORM = 'equick';
 }
