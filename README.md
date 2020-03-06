@@ -52,6 +52,14 @@ $config = [
             'account' => 'xxx',
             'secret' => 'xxx',
         ],
+        'feite' => [
+            'token' => 'xxx',
+            'syncPlatformId' => '', // 订单同步平台标识(一般指第三方平台标识，格式类似：scb.logistics.flyt)
+            'accountId' => 'xxx',
+            'password' => '',
+            'printUsername' => '', // 面单接口需要
+            'printPassword' => '' // 面单接口需要
+        ],
     ],
 ];
 
@@ -157,4 +165,8 @@ $orderNumber = 'xxx';
 $express->getOrderFee($orderNumber);
 ```
 
+## 相关链接
 
+- [云途接口文档](https://docs.qq.com/pdf/DV3p6TkZwWVFWQlFh)
+- [三态接口文档](http://www.sfcservice.com/api-doc)
+- [飞特接口文档](https://docs.qq.com/doc/DV1lrcURDTHNhRkR3)

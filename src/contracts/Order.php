@@ -47,8 +47,8 @@ class Order
     public $isReturn = 0;
 
     /**
-     * 是否带电池，1 是，默认 0
-     * @var integer
+     * 是否带电池，1 是 (或者电池类型)，默认 0
+     * @var integer|string
      */
     public $withBattery;
 

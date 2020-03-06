@@ -99,7 +99,7 @@ class YuntuPlatform extends Platform
             $orderResult->expressNumber = $result[0]['WayBillNumber'];
             $orderResult->expressTrackingNumber = $result[0]['TrackingNumber'];
         } else {
-            throw new ExpressException('订单提交返回失败', (array)$orderResult);
+            throw new ExpressException('订单提交返回失败', (array)$result);
         }
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
