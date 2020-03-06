@@ -115,33 +115,19 @@ class SantaiPlatform extends Platform
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        $this->endpoint = 'http://www.sendfromchina.com/ishipsvc/finance-lists-service?wsdl';
+        $this->endpoint = 'http://www.sfcservice.com/ishipsvc/web-service?wsdl';
         $client = $this->getClient();
+        $orderNumber = substr($orderNumber, strpos($orderNumber, 'WW'));
         $query = [
-            'code' => ltrim($orderNumber, 'SFC3'),
-            'startDate' => date('Y-m-d', strtotime("-2 years")),
-            'endDate' => date('Y-m-d'),
+            'orderCode' => $orderNumber,
         ];
-        $parameter = array_merge($this->getAuthParams(), ['orderFeeDetailRequestInfo' => $query]);
-        $result = $client->call('orderFeeDetail', $parameter);
-        if (isset($result['status']) && $result['status'] === "1" && isset($result['lists'])) {
+        $parameter = array_merge($this->getAuthParams(), $query);
+        $result = $client->call('getFeeByOrderCode', $parameter);
+        if (isset($result['ask']) && $result['ask'] === "Success" && isset($result['data'])) {
             $orderFee = new OrderFee();
-            $orderFee->chargeWeight = ArrayHelper::getValue($result, 'lists.weight', 0);
-            $orderFee->orderNumber = $result['lists']['AeCode'];
-            $orderFee->freight = $result['lists']['shipping_cost'];
-            $orderFee->fuelCosts = $result['lists']['addons'];
-            $orderFee->registrationFee = $result['lists']['reg_fee'];
-            $orderFee->processingFee = $result['lists']['according_handling'];
-            $orderFee->otherFee = $result['lists']['rests_fee'];
-            $orderFee->totalFee = $result['lists']['total_shipping_cost'];
-            $orderFee->customerOrderNumber = $result['lists']['customer_order_code'];
-            $orderFee->country = $result['lists']['cn_name'];
-            $orderFee->transportCode = $result['lists']['ship_type_code'];
-            $orderFee->datetime = date('c', strtotime($result['lists']['deduct_refund_time']));
-            $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
-            return $orderFee;
+            return $this->formatReturnOrder($orderFee, $result);
         }
-        throw new ExpressException('获取订单费用失败', (array)$result);
+        throw new ExpressException('获取订单费用失败：' . json_encode($result), (array)$result);
     }
 
 
@@ -169,27 +155,37 @@ class SantaiPlatform extends Platform
             unset($result['data']);
             foreach ($data as $key => $datum) {
                 $_orderFee = clone $orderFee;
-                $_orderFee->chargeWeight = $datum['feeWeight'];
-                $_orderFee->orderNumber = $datum['orderCode'];
-                $_orderFee->freight = $datum['baseFee'];
-                $_orderFee->fuelCosts = 0;
-                $_orderFee->registrationFee = $datum['regFee'];
-                $_orderFee->processingFee = $datum['dealFee'];
-                $_orderFee->otherFee = isset($datum['otherFees']) ?
-                    array_sum(ArrayHelper::getColumn($datum['otherFees'], 'total_fee')) : 0;
-                $_orderFee->totalFee = $datum['totalFee'];
-                $_orderFee->customerOrderNumber = $datum['customerOrderNo'];
-                $_orderFee->country = '';
-                $_orderFee->transportCode = $datum['shipTypeCode'];
-                $_orderFee->datetime = date('c', strtotime($datum['chargebackTime']));
-                $_orderFee->data = json_encode($result + ['data' => $datum], JSON_UNESCAPED_UNICODE);
-                $items[$key] = $_orderFee;
+                $items[$key] = $this->formatReturnOrder($_orderFee, $datum);
             }
             return $items;
         }
         throw new ExpressException('获取订单费用失败', (array)$result);
     }
 
+
+    /**
+     * @param OrderFee $orderFee
+     * @param array $data
+     * @return OrderFee
+     */
+    protected function formatReturnOrder(OrderFee $orderFee, array $data)
+    {
+        $orderFee->chargeWeight = $data['feeWeight'];
+        $orderFee->orderNumber = $data['orderCode'];
+        $orderFee->freight = $data['baseFee'];
+        $orderFee->fuelCosts = 0;
+        $orderFee->registrationFee = $data['regFee'];
+        $orderFee->processingFee = $data['dealFee'];
+        $orderFee->otherFee = isset($data['otherFees']) ?
+            array_sum(ArrayHelper::getColumn($data['otherFees'], 'total_fee')) : 0;
+        $orderFee->totalFee = bcadd($data['totalFee'], $orderFee->otherFee, 2); // 三态其他费用不包括在运费中
+        $orderFee->customerOrderNumber = $data['customerOrderNo'];
+        $orderFee->country = '';
+        $orderFee->transportCode = $data['shipTypeCode'];
+        $orderFee->datetime = date('c', strtotime($data['chargebackTime']));
+        $orderFee->data = json_encode($data + ['data' => $data], JSON_UNESCAPED_UNICODE);
+        return $orderFee;
+    }
 
     /**
      * @param Order $orderClass
