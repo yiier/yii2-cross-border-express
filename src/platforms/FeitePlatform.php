@@ -289,6 +289,6 @@ class FeitePlatform extends Platform
         }
         $message = isset($arr['Remark']) ? $arr['Remark'] : $result;
         $code = isset($arr['ErrorCode']) ? $arr['ErrorCode'] : 0;
-        throw new ExpressException($message, $code);
+        throw new ExpressException($message, (array)$arr, $code);
     }
 }
