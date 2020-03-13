@@ -123,7 +123,7 @@ class SantaiPlatform extends Platform
         ];
         $parameter = array_merge($this->getAuthParams(), $query);
         $result = $client->call('getFeeByOrderCode', $parameter);
-        if (isset($result['ask']) && $result['ask'] === "Success" && isset($result['data'])) {
+        if (isset($result['ask']) && $result['ask'] === 'Success' && $result['msg'] == 'Success') {
             $orderFee = new OrderFee();
             return $this->formatReturnOrder($orderFee, $result);
         }
