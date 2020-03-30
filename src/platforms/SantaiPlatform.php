@@ -85,7 +85,7 @@ class SantaiPlatform extends Platform
                 throw new ExpressException($result['note']);
             }
         } else {
-            throw new ExpressException('订单提交返回失败', (array)$orderResult);
+            throw new ExpressException('订单提交返回失败', (array)$result);
         }
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
