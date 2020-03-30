@@ -1,6 +1,10 @@
 Cross Border Express for Yii2
 ================
-跨境物流接口，目前只支持云途物流和三态速递
+跨境物流接口，目前只支持:
+
+- 云途物流
+- 三态速递
+- 飞特物流
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
