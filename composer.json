@@ -19,7 +19,8 @@
     "ext-simplexml": "*",
     "guzzlehttp/guzzle": "^6.3",
     "yiisoft/yii2": "~2.0.0",
-    "econea/nusoap": "^0.9.6"
+    "econea/nusoap": "^0.9.6",
+      "ext-json": "*"
   },
   "autoload": {
     "psr-4": {
