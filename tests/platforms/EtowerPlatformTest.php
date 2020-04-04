@@ -9,16 +9,6 @@
 
 namespace platforms;
 
-//require("../../src/Config.php");
-//require("../../src/Express.php");
-//require("../../src/CountryCodes.php");
-//require("../../src/Factory.php");
-//require("../../src/contracts/Order.php");
-//require("../../src/contracts/Goods.php");
-//require("../../src/platforms/PlatformsName.php");
-//require("../../src/platforms/EtowerPlatform.php");
-//require("../../src/platforms/Platform.php");
-
 require_once("../../vendor/autoload.php");
 
 use PHPUnit\Framework\TestCase;
@@ -65,34 +55,24 @@ class EtowerPlatformTest extends TestCase
 
     public function testCreateOrder()
     {
-//        $order = new Order();
-//        $order->customerOrderNo = "";
-//        $order->transportCode = "";
-//        $order->goods = [];
-//        $order->evaluate = ""; // 报税
-//        $order->taxesNumber = '91440300MA5DKRQT36'; // 税号
-//        $order->isRemoteConfirm = 1; // 是否同意收偏远费
-//        $order->isReturn = 0; // 是否退件
-//        $order->withBattery = 0; // 是否带电池
-
         $expressOrder = new Order();
-        $expressOrder->customerOrderNo = 'xxx';
-        $expressOrder->transportCode = 'xxx';
+        $expressOrder->customerOrderNo = '20160311002';
+        $expressOrder->transportCode = 'ABC123456789001';
 
         $goods = new Goods();
-        $goods->description = 'xxx';
-        $goods->cnDescription = 'xxx';
-        $goods->quantity = 'xxx';
-        $goods->weight = 'xxx';
-        $goods->hsCode = 'xxx';
+        $goods->description = 'shoes';
+        $goods->cnDescription = '包含中文字符';
+        $goods->quantity = 1;
+        $goods->weight = 0.776;
+        $goods->hsCode = 'TT11';
         $goods->enMaterial = 'cotton';
         $goods->cnMaterial = '棉';
-        $goods->worth = 1; // 1美元;
-        $goods->sku = 'xxx'; // 云途某些渠道需要
+        $goods->worth = 50; // 1美元;
+        $goods->sku = 'T1818ZS39*1-1'; // 云途某些渠道需要
 
         $expressOrder->goods = [$goods];
         $expressOrder->evaluate = 1; // 1美元
-        $expressOrder->taxesNumber = 'xxx'; // 税号
+        $expressOrder->taxesNumber = ''; // 税号
         $expressOrder->isRemoteConfirm = 1; // 是否同意收偏远费
         $expressOrder->isReturn = 1; // 是否退件
         $expressOrder->withBattery = 0; // 是否带电池
@@ -100,30 +80,30 @@ class EtowerPlatformTest extends TestCase
         $package = new Package();
         $package->description = 'xxxx';
         $package->quantity = 1;
-        $package->weight = 'xxx';
+        $package->weight = 0.766;
         $package->declareWorth = 1; // 1美元
         $expressOrder->package = $package;
 
 
         $recipient = new Recipient();
-        $recipient->countryCode = 'xx';
-        $recipient->name = 'xx';
-        $recipient->address = 'xx';
-        $recipient->city = 'xx';
-        $recipient->state = 'xx';
-        $recipient->zip = 'xx';
-        $recipient->phone = 'xx';
+        $recipient->countryCode = 'AU';
+        $recipient->name = 'Bob';
+        $recipient->address = '200 Bumborah Point Rd';
+        $recipient->city = 'PORT BOTANY';
+        $recipient->state = 'NSW';
+        $recipient->zip = '2036';
+        $recipient->phone = '';
         $expressOrder->recipient = $recipient;
 
         $shipper = new Shipper();
         $shipper->countryCode = 'CN';
-        $shipper->name = 'xxx';
-        $shipper->company = 'xxx';
-        $shipper->address = 'xxx';
-        $shipper->city = 'xxx';
-        $shipper->state = 'xxx';
-        $shipper->zip = 'xx';
-        $shipper->phone = 'xxx';
+        $shipper->name = '哈哈';
+        $shipper->company = '超级翁一';
+        $shipper->address = '北京市';
+        $shipper->city = '北京';
+        $shipper->state = "北京";
+        $shipper->zip = '100022';
+        $shipper->phone = '17091022322';
         $expressOrder->shipper = $shipper;
 
         $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
