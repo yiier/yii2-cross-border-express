@@ -40,7 +40,10 @@ class EtowerPlatformTest extends TestCase
 
     public function testGetPrintUrl()
     {
+        $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
 
+        $orderNumber = 'ABC123456789001001002';
+        $express->getPrintUrl($orderNumber);
     }
 
     public function testGetOrderAllFee()
@@ -50,7 +53,12 @@ class EtowerPlatformTest extends TestCase
 
     public function testGetOrderFee()
     {
+        $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
 
+        $orderNumber = 'BRF0000013011420';
+        $orderFee = $express->getOrderFee($orderNumber);
+
+//        $this->assertIsString($orderResult, "Success");
     }
 
     public function testCreateOrder()
@@ -109,6 +117,7 @@ class EtowerPlatformTest extends TestCase
         $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
         $orderResult = $express->createOrder($expressOrder);
 
+        $this->assertIsString($orderResult, "Success");
         var_dump($orderResult);
     }
 

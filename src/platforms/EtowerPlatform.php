@@ -57,7 +57,8 @@ class EtowerPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param string $countryCode
+     * @return array|void|Transport[]
      */
     public function getTransportsByCountryCode(string $countryCode)
     {
@@ -104,11 +105,43 @@ class EtowerPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @return string
+     * @throws ExpressException
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        // TODO: Implement getPrintUrl() method.
+        $uri = "/services/shipper/labels";
+
+        try {
+            $headers = $this->buildClientHeader("POST", $uri);
+        } catch (Exception $e) {
+            throw new ExpressException($e->getMessage());
+        }
+
+        $data = [
+            "orderIds" => [$orderNumber],
+            "labelType" => 1,
+            "packinglist" => false,
+            "merged" => false,
+            "labelFormat" => "JPG"
+        ];
+
+        $body = [
+            'body' => json_encode($data, true),
+            "headers" => $headers,
+        ];
+
+        $response = $this->client->post($this->host . $uri, $body);
+        $result = $this->parseResult($response->getBody());
+
+        var_dump($result);
+
+        try {
+            return $result[0]['labelContent'];
+        } catch (\Exception $e) {
+            throw new ExpressException('获取打印地址失败', (array)$result);
+        }
     }
 
     /**
@@ -116,7 +149,41 @@ class EtowerPlatform extends Platform
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        // TODO: Implement getOrderFee() method.
+        $uri = "/services/shipper/queryorders";
+        try {
+            $headers = $this->buildClientHeader("POST", $uri);
+        } catch (Exception $e) {
+            throw new ExpressException($e->getMessage());
+        }
+
+        $data = [
+            $orderNumber
+        ];
+
+        $body = [
+            'body' => json_encode($data, true),
+            "headers" => $headers,
+        ];
+
+        $response = $this->client->post($this->host . $uri, $body);
+        $res = $this->parseResult($response->getBody());
+
+        var_dump($res);
+        $orderFee = new OrderFee();
+//        $orderFee->customerOrderNumber = $result['CustomerOrderNumber'];
+//        $orderFee->orderNumber = $result['WayBillNumber'];
+//        $orderFee->chargeWeight = $result['ChargeWeight'];
+//        $orderFee->freight = $result['Freight'];
+//        $orderFee->fuelCosts = $result['FuelSurcharge'];
+//        $orderFee->registrationFee = $result['RegistrationFee'];
+//        $orderFee->processingFee = $result['ProcessingFee'];
+//        $orderFee->otherFee = $result['OtherFee'];
+//        $orderFee->totalFee = $result['TotalFee'];
+//        $orderFee->country = $result['CountryName'];
+//        $orderFee->transportName = $result['ShippingMethodName'];
+//        $orderFee->datetime = $result['OccurrenceTime'];
+//        $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+        return $orderFee;
     }
 
     /**
