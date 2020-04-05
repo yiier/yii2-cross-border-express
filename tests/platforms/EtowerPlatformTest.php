@@ -11,12 +11,15 @@ namespace platforms;
 
 require_once("../../vendor/autoload.php");
 
+use phpDocumentor\Reflection\DocBlock\Tags\Formatter;
 use PHPUnit\Framework\TestCase;
 use yiier\crossBorderExpress\contracts\Goods;
 use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\Package;
 use yiier\crossBorderExpress\contracts\Recipient;
 use yiier\crossBorderExpress\contracts\Shipper;
+use yiier\crossBorderExpress\exceptions\ExpressException;
 use yiier\crossBorderExpress\Express;
 use yiier\crossBorderExpress\platforms\PlatformsName;
 
@@ -29,6 +32,9 @@ class EtowerPlatformTest extends TestCase
                 "host" => "http://qa.etowertech.com",
                 "token" => "test5AdbzO5OEeOpvgAVXUFE0A",
                 "key" => "79db9e5OEeOpvgAVXUFWSD"
+//                "host" => "https://cn.etowertech.com",
+//                "token" => "pclTwbivO-ppqeEQbKceeY",
+//                "key" => "bAw_Qgqp7JA4QiOdsqnI4Q"
             ]
         ]
     ];
@@ -42,30 +48,38 @@ class EtowerPlatformTest extends TestCase
     {
         $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
 
-        $orderNumber = 'ABC123456789001001002';
+        $orderNumber = 'GV284853828GB';
         $express->getPrintUrl($orderNumber);
     }
 
     public function testGetOrderAllFee()
     {
+        $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
 
+        $query = ['GV284853828GB'];
+        $orderFee = $express->getOrderAllFee($query);
     }
 
     public function testGetOrderFee()
     {
         $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
 
-        $orderNumber = 'BRF0000013011420';
+        $orderNumber = 'GV284853828GB';
+        /** @var OrderFee $orderFee */
         $orderFee = $express->getOrderFee($orderNumber);
 
+//        $this->assertIsString("Success", $orderFee->);
 //        $this->assertIsString($orderResult, "Success");
+        echo $orderFee->data;
     }
 
     public function testCreateOrder()
     {
+        $t = new \DateTime();
+
         $expressOrder = new Order();
-        $expressOrder->customerOrderNo = '20160311002';
-        $expressOrder->transportCode = 'ABC123456789001';
+        $expressOrder->customerOrderNo = $t->format("YmdHis");
+        $expressOrder->transportCode = sprintf("CN%s", $t->format("YmdHis"));
 
         $goods = new Goods();
         $goods->description = 'shoes';
@@ -115,9 +129,13 @@ class EtowerPlatformTest extends TestCase
         $expressOrder->shipper = $shipper;
 
         $express = new Express($this->config, PlatformsName::ETOWER_PLATFORM);
-        $orderResult = $express->createOrder($expressOrder);
+        try {
+            $orderResult = $express->createOrder($expressOrder);
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+        }
 
-        $this->assertIsString($orderResult, "Success");
+//        $this->assertIsString($orderResult, "Success");
         var_dump($orderResult);
     }
 

@@ -11,11 +11,9 @@
 namespace yiier\crossBorderExpress\platforms;
 
 
-use Cassandra\Date;
 use Exception;
 use GuzzleHttp\Client;
 use nusoap_client;
-use yiier\crossBorderExpress\Config;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
@@ -38,7 +36,7 @@ class EtowerPlatform extends Platform
     private $host;
 
     /**
-     * @inheritDoc
+     * @return Client|nusoap_client
      */
     public function getClient()
     {
@@ -71,22 +69,21 @@ class EtowerPlatform extends Platform
      * @param Order $order
      * @return OrderResult
      * @throws ExpressException
+     * @throws Exception
      */
     public function createOrder(Order $order): OrderResult
     {
         $uri = "/services/shipper/orders";
 
         $waybill[] = $this->formatOrder($order);
-        try {
-            $headers = $this->buildClientHeader("POST", $uri);
-        } catch (Exception $e) {
-            throw new ExpressException($e->getMessage());
-        }
+        $headers = $this->buildClientHeader("POST", $uri);
 
         $body = [
             'body' => json_encode($waybill, true),
             "headers" => $headers,
         ];
+
+        echo json_encode($waybill, true);
 
         $response = $this->client->post($this->host . $uri, $body);
         $result = $this->parseResult($response->getBody());
@@ -135,9 +132,8 @@ class EtowerPlatform extends Platform
         $response = $this->client->post($this->host . $uri, $body);
         $result = $this->parseResult($response->getBody());
 
-        var_dump($result);
-
         try {
+            // TODO: 返回图片的base64值
             return $result[0]['labelContent'];
         } catch (\Exception $e) {
             throw new ExpressException('获取打印地址失败', (array)$result);
@@ -145,7 +141,9 @@ class EtowerPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @return OrderFee
+     * @throws ExpressException
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
@@ -165,33 +163,62 @@ class EtowerPlatform extends Platform
             "headers" => $headers,
         ];
 
+
         $response = $this->client->post($this->host . $uri, $body);
         $res = $this->parseResult($response->getBody());
 
-        var_dump($res);
         $orderFee = new OrderFee();
-//        $orderFee->customerOrderNumber = $result['CustomerOrderNumber'];
-//        $orderFee->orderNumber = $result['WayBillNumber'];
-//        $orderFee->chargeWeight = $result['ChargeWeight'];
+
+        if (empty($res) || empty($res[0]) || empty($res[0]["data"])) {
+            return $orderFee;
+        }
+
+        $result = $res[0]["data"]["order"];
+
+        var_dump($res);
+
+        $orderFee->customerOrderNumber = $result["trackingNo"];
+        $orderFee->orderNumber = $result['referenceNo'];
+//        $orderFee->chargeWeight = $result['weight'];
 //        $orderFee->freight = $result['Freight'];
 //        $orderFee->fuelCosts = $result['FuelSurcharge'];
 //        $orderFee->registrationFee = $result['RegistrationFee'];
 //        $orderFee->processingFee = $result['ProcessingFee'];
-//        $orderFee->otherFee = $result['OtherFee'];
-//        $orderFee->totalFee = $result['TotalFee'];
-//        $orderFee->country = $result['CountryName'];
+        $orderFee->otherFee = $result['invoiceValue'];
+        $orderFee->totalFee = $result['TotalFee'];
+        $orderFee->country = $result['country'];
 //        $orderFee->transportName = $result['ShippingMethodName'];
 //        $orderFee->datetime = $result['OccurrenceTime'];
-//        $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+        $orderFee->data = json_encode($result, JSON_UNESCAPED_UNICODE);
         return $orderFee;
     }
 
+
     /**
-     * @inheritDoc
+     * @param array $query
+     * @return array
+     * @throws ExpressException
      */
     public function getOrderAllFee(array $query = []): array
     {
-        // TODO: Implement getOrderAllFee() method.
+        $uri = "/services/shipper/queryorders";
+        try {
+            $headers = $this->buildClientHeader("POST", $uri);
+        } catch (Exception $e) {
+            throw new ExpressException($e->getMessage());
+        }
+
+        $body = [
+            'body' => json_encode($query, true),
+            "headers" => $headers,
+        ];
+
+        $response = $this->client->post($this->host . $uri, $body);
+        $res = $this->parseResult($response->getBody());
+
+        // TODO: 没有
+
+        return [];
     }
 
 
@@ -209,7 +236,7 @@ class EtowerPlatform extends Platform
         $t = $t->setTimezone(new \DateTimeZone("GMT+8"));
 
         $wallTechDate = $t->format(\DateTime::RFC1123);
-        $auth = $method . "\0x000A" . $wallTechDate . "\0x000A" . $this->config->get("host") . $path;
+        $auth = $method . "\n" . $wallTechDate . "\n" . $this->config->get("host") . $path;
         $hash = base64_encode(hash_hmac('sha1', $auth, $this->config->get("key"), true));
         return [
             'Content-Type' => 'application/json; charset=utf8',
@@ -230,15 +257,16 @@ class EtowerPlatform extends Platform
      * @throws ExpressException
      * @throws Exception
      */
-    protected function parseResult($result)
+    protected function parseResult(string $result): array
     {
+        echo $result;
         $arr = json_decode($result, true);
         if (empty($arr) || !isset($arr['status'])) {
             throw new Exception('Invalid response: ' . $result, 400);
         }
         if (strtoupper($arr["status"]) != self::SUCCESS) {
             $message = $arr['errors'];
-            if (!empty($arr['data'][0]['errors'])) {
+            if (!empty($arr['data']) && !empty($arr['data'][0]['errors'])) {
                 $message = $arr['data'][0]['errors'];
             }
             throw new ExpressException($message, $arr['errors']);
@@ -255,6 +283,7 @@ class EtowerPlatform extends Platform
      */
     protected function formatOrder(Order $orderClass)
     {
+        $goods = [];
         foreach ($orderClass->goods as $key => $value) {
             $goods[$key] = [
                 "itemNo" => "00001",
@@ -269,6 +298,67 @@ class EtowerPlatform extends Platform
                 "productURL" => ""
             ];
         }
+
+        return [
+            'trackingNo' => $orderClass->transportCode,
+            'consignmentId' => '1',
+            'referenceNo' => $orderClass->customerOrderNo,
+            'addressLine1' => $orderClass->recipient->address,
+            'addressLine2' => '',
+            'addressLine3' => '',
+            'city' => $orderClass->recipient->city,
+            'country' => $orderClass->recipient->countryCode,
+            'description' => $orderClass->package->description,
+            'nativeDescription' => $orderClass->package->description,
+            'email' => $orderClass->recipient->email,
+            'facility' => "",
+            'instruction' => "",
+            'invoiceCurrency' => '',
+            'batteryType' => $orderClass->withBattery,
+            'invoiceValue' => 100,
+            'phone' => $orderClass->recipient->phone,
+            'platform' => "",
+            'postcode' => $orderClass->recipient->zip,
+            'recipientCompany' => $orderClass->recipient->company,
+            'recipientName' => $orderClass->recipient->name,
+            'serviceCode' => '',
+            'serviceOption' => '',
+            "sku" => "T1818ZS39*1",
+            "state" => "NSW",
+            "weightUnit" => "KG",
+            "weight" => $orderClass->package->weight,
+            "dimensionUnit" => "",
+            "length" => $orderClass->package->length,
+            "width" => $orderClass->package->width,
+            "height" => $orderClass->package->height,
+            "volume" => "",
+            "shipperName" => $orderClass->shipper ? $orderClass->shipper->name : "",
+            "shipperAddressLine1" => $orderClass->shipper ? $orderClass->shipper->address : "",
+            "shipperAddressLine2" => "",
+            "shipperAddressLine3" => "",
+            "shipperCity" => $orderClass->shipper ? $orderClass->shipper->city : "",
+            "shipperState" => $orderClass->shipper ? $orderClass->shipper->state : "",
+            "shipperPostcode" => $orderClass->shipper ? $orderClass->shipper->zip : "",
+            "shipperCountry" => $orderClass->shipper ? $orderClass->shipper->countryCode : "",
+            "shipperPhone" => $orderClass->shipper ? $orderClass->shipper->phone : "",
+            "recipientTaxId" => $orderClass->taxesNumber,
+            "authorityToLeave" => "",
+            "incoterm" => "",
+            "lockerService" => "",
+            "extendData" => [
+                "nationalNumber" => "",
+                "nationalIssueDate" => "11/11/2017",
+                "cyrillicName" => "Bob",
+                "imei" => "",
+                "isImei" => true,
+                "vendorid" => "64652016681",
+                "gstexemptioncode" => "",
+                "abnnumber" => "",
+                "sortCode" => "",
+                "coveramount" => 12
+            ],
+            "orderItems" => $goods
+        ];
 
         return [
             'trackingNo' => $orderClass->transportCode,
