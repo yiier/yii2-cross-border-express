@@ -15,4 +15,5 @@ class PlatformsName
     const EQUICK_PLATFORM = 'equick';
     const FEITE_PLATFORM = 'feite';
     const ETOWER_PLATFORM = "etower";
+    const ZHONGSHANG_PLATFORM = "zhongshang";
 }
