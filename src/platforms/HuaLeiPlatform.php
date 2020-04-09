@@ -19,12 +19,12 @@ use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\exceptions\ExpressException;
 
-class ZhongShangPlatform extends Platform
+class HuaLeiPlatform extends Platform
 {
     /**
      * default host
      */
-    const HOST = 'http://119.3.151.226:8082';
+    const HOST = 'http://www.sz56t.com:8082';
 
     const SUCCESS = "TRUE";
 

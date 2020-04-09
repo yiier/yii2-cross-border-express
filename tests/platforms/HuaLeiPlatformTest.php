@@ -20,25 +20,22 @@ use yiier\crossBorderExpress\contracts\Package;
 use yiier\crossBorderExpress\contracts\Recipient;
 use yiier\crossBorderExpress\contracts\Shipper;
 use yiier\crossBorderExpress\Express;
-use yiier\crossBorderExpress\platforms\ZhongShangPlatform;
+use yiier\crossBorderExpress\platforms\HuaLeiPlatform;
 use PHPUnit\Framework\TestCase;
 use yiier\crossBorderExpress\platforms\PlatformsName;
 
-class ZhongShangPlatformTest extends TestCase
+class HuaLeiPlatformTest extends TestCase
 {
     private $config = [
         "timeout" => 60.0,
         "platforms" => [
-            PlatformsName::ZHONGSHANG_PLATFORM => [
-//                "host" => "http://118.25.228.118:8082",
-//                "print_host" => "http://118.25.228.118:8089",
+            PlatformsName::HUALEI_PLATFORM => [
+                "host" => "http://www.sz56t.com:8082",
                 "print_host" => "http://www.sz56t.com:8089",
-//                "username" => "TEST",
-//                "password" => "123456",
-                "username" => "KLXX",
-                "password" => '123456',
-                "customer_id" => "16481",
-                "customer_user_id" => "12941"
+                "username" => "",
+                "password" => "",
+                "customer_id" => "", // 如果有这customer_id和customer_user_id ，可以不填username,password
+                "customer_user_id" => ""
             ]
         ]
     ];
@@ -99,7 +96,7 @@ class ZhongShangPlatformTest extends TestCase
         $shipper->phone = '17091022322';
         $expressOrder->shipper = $shipper;
 
-        $express = new Express($this->config, PlatformsName::ZHONGSHANG_PLATFORM);
+        $express = new Express($this->config, PlatformsName::HUALEI_PLATFORM);
         try {
             /** @var OrderResult $orderResult */
             $orderResult = $express->createOrder($expressOrder);
@@ -134,7 +131,7 @@ class ZhongShangPlatformTest extends TestCase
     public function testGetPrintUrl()
     {
         $orderNumber = "881168"; // 订单号
-        $express = new Express($this->config, PlatformsName::ZHONGSHANG_PLATFORM);
+        $express = new Express($this->config, PlatformsName::HUALEI_PLATFORM);
         $res = $express->getPrintUrl($orderNumber);
         echo $res;
         $this->assertNotNull($res);
