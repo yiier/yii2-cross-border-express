@@ -19,7 +19,7 @@ use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\exceptions\ExpressException;
 
-class HuaLeiPlatform extends Platform
+class HualeiPlatform extends Platform
 {
     /**
      * default host
