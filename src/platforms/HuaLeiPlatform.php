@@ -94,7 +94,6 @@ class HuaLeiPlatform extends Platform
         $params = json_encode($waybill, true);
 
         $uri = $this->host . "/createOrderApi.htm?param=" . $params;
-        echo $uri;
         $result = $this->parseResult($this->client->post($uri)->getBody());
 
         $orderResult = new OrderResult();
