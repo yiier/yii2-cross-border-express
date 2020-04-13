@@ -100,7 +100,9 @@ class HuaLeiPlatform extends Platform
         if (!empty($result) && strtoupper($result["ack"]) == self::SUCCESS) {
             $orderResult->expressTrackingNumber = $result["tracking_number"];
             $orderResult->expressAgentNumber = $result["order_transfercode"];
-            $orderResult->expressNumber = $result["reference_number"];
+//            $orderResult->expressNumber = $result["reference_number"];
+            $orderResult->expressNumber = $result["order_id"];
+            $orderResult->data = json_encode($result, true);
         } else {
             throw new ExpressException('订单提交返回失败', (array)$result);
         }
@@ -116,7 +118,7 @@ class HuaLeiPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        return sprintf("%s/order/FastRpt/PDF_NEW.aspx?Format=A4_EMS_BGD.frx&PrintType=1&order_id=%s",
+        return sprintf("%s/order/FastRpt/PDF_NEW.aspx?Format=A4_EMS_BGD.frx&PrintType=1&order_id=%s&Print=1",
             $this->config->get("print_host"), $orderNumber
         );
     }
