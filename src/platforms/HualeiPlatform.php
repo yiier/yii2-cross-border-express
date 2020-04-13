@@ -118,7 +118,7 @@ class HualeiPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        return sprintf("%s/order/FastRpt/PDF_NEW.aspx?Format=A4_EMS_BGD.frx&PrintType=1&order_id=%s&Print=1",
+        return sprintf("%s/order/FastRpt/PDF_NEW.aspx?Format=A4_EMS_BGD.frx&PrintType=lab10_10&order_id=%s&Print=1",
             $this->config->get("print_host"), $orderNumber
         );
     }
