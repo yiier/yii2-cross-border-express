@@ -58,7 +58,7 @@ class HuaLeiPlatform extends Platform
             'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
         ]);
 
-        $this->host = $this->host ? $this->config->get("host") : self::HOST;
+        $this->host = $this->config->get("host") ? $this->config->get("host") : self::HOST;
         $this->customerId = $this->config->get("customer_id");
         $this->customerUserId = $this->config->get("customer_user_id");
         if ($this->customerUserId == "" || $this->customerId == "") {
