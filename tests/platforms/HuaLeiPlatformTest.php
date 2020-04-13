@@ -30,8 +30,8 @@ class HuaLeiPlatformTest extends TestCase
         "timeout" => 60.0,
         "platforms" => [
             PlatformsName::HUALEI_PLATFORM => [
-                "host" => "http://www.sz56t.com:8082",
-                "print_host" => "http://www.sz56t.com:8089",
+                "host" => "",
+                "print_host" => "",
                 "username" => "",
                 "password" => "",
                 "customer_id" => "", // 如果有这customer_id和customer_user_id ，可以不填username,password
@@ -130,7 +130,7 @@ class HuaLeiPlatformTest extends TestCase
 
     public function testGetPrintUrl()
     {
-        $orderNumber = "881168"; // 订单号
+        $orderNumber = "283932"; // 订单号
         $express = new Express($this->config, PlatformsName::HUALEI_PLATFORM);
         $res = $express->getPrintUrl($orderNumber);
         echo $res;
