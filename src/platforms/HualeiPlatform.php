@@ -158,7 +158,7 @@ class HualeiPlatform extends Platform
                 "invoice_weight" => $value->weight,
                 "item_id" => "",
                 "item_transactionid" => "",
-                "sku" => $value->sku,
+                "sku" => $value->cnDescription,
                 "sku_code" => "",
                 "hs_code" => $value->hsCode
             ];
