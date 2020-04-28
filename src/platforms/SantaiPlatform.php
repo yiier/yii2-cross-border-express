@@ -213,6 +213,7 @@ class SantaiPlatform extends Platform
             'recipientState' => $orderClass->recipient->state,
             'recipientCity' => $orderClass->recipient->city,
             'recipientAddress' => $orderClass->recipient->address,
+            'doorplate' => $orderClass->recipient->doorplate,
             'recipientZipCode' => $orderClass->recipient->zip,
             'recipientPhone' => $orderClass->recipient->phone,
             'recipientOrganization' => $orderClass->recipient->company,

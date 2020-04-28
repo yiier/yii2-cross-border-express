@@ -90,7 +90,7 @@ class FeitePlatform extends Platform
             $orderResult->expressNumber = $result[0]['OrderId'];
             $orderResult->expressTrackingNumber = $result[0]['TraceId'];
         } else {
-            throw new ExpressException('获取订单费用失败', (array)$result);
+            throw new ExpressException('创建订单失败', (array)$result);
         }
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
@@ -287,7 +287,8 @@ class FeitePlatform extends Platform
         if (!$arr['ErrorCode'] && $arr['Success']) {
             return $key ? $arr[$key] : $arr;
         }
-        $message = isset($arr['Remark']) ? $arr['Remark'] : $result;
+        $message = isset($arr['ErpFailOrders']['0']['Remark']) ? $arr['ErpFailOrders']['0']['Remark'] :
+            (isset($arr['Remark']) ? $arr['Remark'] : $result);
         $code = isset($arr['ErrorCode']) ? $arr['ErrorCode'] : 0;
         throw new ExpressException($message, (array)$arr, $code);
     }

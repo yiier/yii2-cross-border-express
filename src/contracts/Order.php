@@ -81,5 +81,4 @@ class Order
      * @var integer
      */
     public $pieceNumber;
-
 }

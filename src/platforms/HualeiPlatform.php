@@ -78,7 +78,7 @@ class HualeiPlatform extends Platform
      */
     public function getTransportsByCountryCode(string $countryCode): array
     {
-        return null;
+        return [];
     }
 
     /**
@@ -129,7 +129,7 @@ class HualeiPlatform extends Platform
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        return null;
+        return new OrderFee();
     }
 
     /**

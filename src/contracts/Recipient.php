@@ -68,4 +68,9 @@ class Recipient
      * @var string
      */
     public $email;
+
+    /**
+     * @var string 门牌号 三态中欧铁路渠道德国需要门牌号
+     */
+    public $doorplate;
 }
