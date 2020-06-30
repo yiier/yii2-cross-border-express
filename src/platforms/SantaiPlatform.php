@@ -203,6 +203,8 @@ class SantaiPlatform extends Platform
                 'shipperZipCode' => $orderClass->shipper->zip,
                 'shipperPhone' => $orderClass->shipper->phone,
                 'shipperCompanyName' => $orderClass->shipper->company,
+                'shipperState' => $orderClass->shipper->state,
+                'shipperCity' => $orderClass->shipper->city,
             ];
         }
 
