@@ -270,6 +270,7 @@ class SantaiPlatform extends Platform
             'HKFEDEX',
             'CNS FEDEX',
             'HKSFEDEX',
+            'AUEXPIE',
             'EUEXP3'
         ];
 
