@@ -1,0 +1,253 @@
+<?php
+
+
+namespace yiier\crossBorderExpress\platforms;
+
+
+use GuzzleHttp\Client;
+use nusoap_client;
+use yiier\crossBorderExpress\contracts\Order;
+use yiier\crossBorderExpress\contracts\OrderFee;
+use yiier\crossBorderExpress\contracts\OrderResult;
+use yiier\crossBorderExpress\contracts\Transport;
+use yiier\crossBorderExpress\CountryCodes;
+use yiier\crossBorderExpress\exceptions\ExpressException;
+
+class JiyouPlatform extends Platform
+{
+
+    /**
+     * default host
+     */
+    const HOST = '';
+
+    /**
+     * @var string $userToken
+     */
+    private $userToken = "";
+
+    /**
+     * 打印样式
+     * 1 地址标签打印
+     * 11 报关单
+     * 2 地址标签+配货信息
+     * 3 地址标签+报关单
+     * 12 特殊100mm×100mm地址标签+配货信息+报关单
+     * @var int $printSelect 打印物流样式
+     */
+    private $printSelect = 3;
+
+    /**
+     * 纸张尺寸，
+     * 1 表示80.5mm × 90mm
+     * 2 表示105mm × 210mm
+     * 3 表示A4
+     * 7 表示100mm × 150mm
+     * 4 表示102mm × 76mm
+     * 5 表示110mm × 85mm
+     * 6 表示100mm × 100mm
+     * @var int $pageSizeCode
+     */
+    private $pageSizeCode = 7;
+
+    /**
+     * @var string $host
+     */
+    private $host;
+
+
+    /**
+     * @var nusoap_client $client
+     */
+    private $client;
+
+    /**
+     * @inheritDoc
+     * @throws ExpressException
+     */
+    public function getClient()
+    {
+        $this->host = $this->config->get("host") ? $this->config->get("host") : self::HOST;
+        $this->userToken = $this->config->get("user_token");
+        if ($this->userToken == "") {
+            throw new ExpressException("userToken不能为空");
+        }
+
+        $this->client = new nusoap_client($this->host, true);
+        $this->client->soap_defencoding = 'UTF-8';
+        $this->client->decode_utf8 = false;
+
+        return $this->client;
+    }
+
+    /**
+     * @inheritDoc
+     * @return Transport[]|array
+     */
+    public function getTransportsByCountryCode(string $countryCode): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function createOrder(Order $order): OrderResult
+    {
+        $orderResult = new OrderResult();
+        $parameter = $this->formatOrder($order);
+        $result = $this->client->call('createOrder', [
+            'createAndAuditOrder' => [
+                'createOrderRequest' => $parameter,
+                "userToken" => $this->userToken,
+            ]
+        ]);
+        if (isset($result["success"])) {
+            if (strtoupper($result["success"]) == "TRUE") {
+                $orderResult->expressTrackingNumber = $result['trackingNo'];
+                $orderResult->expressNumber = $result['id'];
+            } else {
+                $msg = !empty($result['errorCode']) ? $result["errorCode"] . ":" : "";
+                $msg .= !empty($result['errorInfo']) ? $result["errorInfo"] . ":" : "";
+                $msg .= !empty($result['solution']) ? $result["solution"] : "";
+                throw new ExpressException($msg);
+            }
+        } else {
+            throw new ExpressException('订单提交返回失败', (array)$result);
+        }
+        $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
+
+        return $orderResult;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPrintUrl(string $orderNumber): string
+    {
+        $orderKey = "trackingNo"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）
+
+        return sprintf("%s/xms/client/order_online!printPdf.action?userToken=%s&%s=%s&printSelect=%d&pageSizeCode=%d&downloadPdf=0",
+            $this->host, $this->userToken, $orderKey, $orderNumber, $this->printSelect, $this->pageSizeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrderFee(string $orderNumber): OrderFee
+    {
+        $orderFee = new OrderFee();
+
+        $result = $this->client->call('lookupOrder', [
+            "userToken" => $this->userToken,
+            "lookupOrderRequest" => [
+                "trackingNo" => $orderNumber,
+            ]
+        ]);
+        if (empty($result["success"])) {
+            throw new ExpressException('订单提交返回失败', (array)$result);
+        }
+        if (strtoupper($result["success"]) != "TRUE") {
+            $msg = !empty($result['errorCode']) ? $result["errorCode"] . ":" : "";
+            $msg .= !empty($result['errorInfo']) ? $result["errorInfo"] . ":" : "";
+            $msg .= !empty($result['solution']) ? $result["solution"] : "";
+            throw new ExpressException($msg);
+        }
+
+        $order = $result["order"];
+
+        $orderFee->orderNumber = $order["trackingNo"];
+        $orderFee->chargeWeight = $order["balanceWeight"] > 0 ? $order["balanceWeight"] * 1000 : 0; // realWeight 实际重（kg）。 realVolWeight 体积重（kg）。balanceWeight 结算重（kg）。
+        $orderFee->freight = $order["transportFee"] * 100;
+        $orderFee->totalFee = $order["totalFee"] * 100;
+        $orderFee->otherFee = $order["otherFee"] * 100;
+        $orderFee->customerOrderNumber = $order["orderNo"];
+        $orderFee->country = CountryCodes::getEnName($order["destinationCountryCode"]);
+        $orderFee->transportCode = $order["transportWayCode"];
+        $orderFee->transportName = $order["transportWayName"];
+        $orderFee->datetime = $order["createTime"]; //2019-03-02T18:26:25
+        $orderFee->data = json_encode($result["order"], JSON_UNESCAPED_UNICODE);
+
+        return $orderFee;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOrderAllFee(array $query = []): array
+    {
+        return [];
+    }
+
+    /**
+     * 格式化所需要的数据
+     *
+     * @param Order $orderClass
+     * @return array
+     */
+    protected function formatOrder(Order $orderClass): array
+    {
+        $shipper = [];
+        if ($orderClass->shipper) {
+            // 发件人
+            $shipper = [
+                "shipperCompanyName" => $orderClass->shipper->company,
+                "shipperName" => $orderClass->shipper->name,
+                "shipperAddress" => $orderClass->shipper->address,
+                "shipperTelephone" => $orderClass->shipper->phone,
+                "shipperMobile" => $orderClass->shipper->phone,
+                "shipperPostcode" => $orderClass->shipper->zip,
+                "shipperStreetNo" => "",
+                "shipperStreet" => "",
+                "shipperCity" => $orderClass->shipper->city,
+                "shipperProvince" => $orderClass->shipper->state,
+            ];
+        }
+
+        // 收件人
+        $declareItems = [];
+        foreach ($orderClass->goods as $good) {
+            $declareItems[] = [
+                'name' => $good->description,
+                'cnName' => $good->cnDescription,
+                'pieces' => $good->quantity,
+                'netWeight' => $good->weight,
+                'unitPrice' => $good->worth,
+                'productMemo' => '',
+                'customsNo' => $good->hsCode,
+            ];
+        }
+
+        $order = [
+            'consigneeCompanyName' => $orderClass->recipient->company,
+            'consigneeName' => $orderClass->recipient->name,
+            'consigneeStreetNo' => "",
+            'street' => $orderClass->recipient->address,
+            'city' => $orderClass->recipient->city,
+            'province' => $orderClass->recipient->state,
+            'consigneePostcode' => $orderClass->recipient->zip,
+            'consigneeTelephone' => $orderClass->recipient->phone,
+            'consigneeMobile' => $orderClass->recipient->phone,
+//            'orderNo' => $orderClass->customerOrderNo,
+            'trackingNo' => $orderClass->customerOrderNo,
+            'transportWayCode' => $orderClass->transportCode, // 运输方式代码。通过接口getTransportWayList可查询到所有运输方式。
+            'cargoCode' => 'W',
+            'originCountryCode' => $orderClass->shipper->countryCode,
+            'destinationCountryCode' => $orderClass->recipient->countryCode,
+            'pieces' => $orderClass->package->quantity,
+            'length' => $orderClass->package->length,
+            'width' => $orderClass->package->height,
+            'height' => $orderClass->package->height,
+            'weight' => $orderClass->package->weight,
+            'insured' => $orderClass->evaluate > 0 ? "Y" : 'N',
+            'goodsCategory' => 'O',
+            'goodsDescription' => '',
+            'memo' => '',
+            'codSum' => '',
+            'codCurrency' => '',
+            'declareItems' => $declareItems
+        ];
+
+        return array_merge($order, $shipper);
+    }
+}
