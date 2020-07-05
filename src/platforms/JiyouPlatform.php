@@ -68,6 +68,7 @@ class JiyouPlatform extends Platform
     public function getClient()
     {
         $this->host = $this->config->get("host") ? $this->config->get("host") : self::HOST;
+        $this->host .= "/xms/services/order?wsdl";
         $this->userToken = $this->config->get("user_token");
         if ($this->userToken == "") {
             throw new ExpressException("userToken不能为空");
