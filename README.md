@@ -6,6 +6,7 @@ Cross Border Express for Yii2
 - 三态速递
 - 飞特物流
 - 华磊物流
+- 集优物流
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -65,13 +66,17 @@ $config = [
             'printUsername' => '', // 面单接口需要
             'printPassword' => '' // 面单接口需要
         ],
-        'huaLei' => [
+        'hualei' => [
             'host' => '',
             'print_host' => '',
             'customer_id' => '', # 如果customer_id和customer_user_id不为空可不填username及password
             'customer_user_id' => '',
             'username' => '',
             'password' => '',
+        ],
+        'jiyou' => [
+            'host' => '',
+            'user_token' => ''
         ]
     ],
 ];
@@ -184,3 +189,4 @@ $express->getOrderFee($orderNumber);
 - [三态接口文档](http://www.sfcservice.com/api-doc)
 - [飞特接口文档](https://docs.qq.com/doc/DV1lrcURDTHNhRkR3)
 - [华磊接口文档](http://www.sz56t.com:8090/pages/viewpage.action?pageId=3473454)
+- [集优接口文档](http://120.25.155.64:8086/xms/download/api/HLT-XMS-API.docx)
