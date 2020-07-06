@@ -1,5 +1,9 @@
 <?php
-
+/**
+ * author     : icowan <solacowa@gmail.com>
+ * createTime : 2020/7/04 8:32 PM
+ * description:
+ */
 
 namespace yiier\crossBorderExpress\platforms;
 
@@ -59,7 +63,7 @@ class JiyouPlatform extends Platform
     /**
      * @var nusoap_client $client
      */
-    private $client;
+    public $client;
 
     /**
      * @inheritDoc
@@ -68,13 +72,13 @@ class JiyouPlatform extends Platform
     public function getClient()
     {
         $this->host = $this->config->get("host") ? $this->config->get("host") : self::HOST;
-        $this->host .= "/xms/services/order?wsdl";
+        $host = $this->host . "/xms/services/order?wsdl";
         $this->userToken = $this->config->get("user_token");
         if ($this->userToken == "") {
             throw new ExpressException("userToken不能为空");
         }
 
-        $this->client = new nusoap_client($this->host, true);
+        $this->client = new nusoap_client($host, true);
         $this->client->soap_defencoding = 'UTF-8';
         $this->client->decode_utf8 = false;
 
@@ -91,30 +95,33 @@ class JiyouPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param Order $order
+     * @return OrderResult
+     * @throws ExpressException
      */
     public function createOrder(Order $order): OrderResult
     {
         $orderResult = new OrderResult();
         $parameter = $this->formatOrder($order);
+
+        // createOrder, createAndAuditOrder
         $result = $this->client->call('createOrder', [
-            'createAndAuditOrder' => [
-                'createOrderRequest' => $parameter,
-                "userToken" => $this->userToken,
-            ]
+            'createOrderRequest' => $parameter,
+            "userToken" => $this->userToken,
         ]);
         if (isset($result["success"])) {
             if (strtoupper($result["success"]) == "TRUE") {
                 $orderResult->expressTrackingNumber = $result['trackingNo'];
                 $orderResult->expressNumber = $result['id'];
             } else {
-                $msg = !empty($result['errorCode']) ? $result["errorCode"] . ":" : "";
-                $msg .= !empty($result['errorInfo']) ? $result["errorInfo"] . ":" : "";
-                $msg .= !empty($result['solution']) ? $result["solution"] : "";
+                $error = $result["error"];
+                $msg = !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
+                $msg .= !empty($error['errorInfo']) ? $error["errorInfo"] . ":" : "";
+                $msg .= !empty($error['solution']) ? $error["solution"] : "";
                 throw new ExpressException($msg);
             }
         } else {
-            throw new ExpressException('订单提交返回失败', (array)$result);
+            throw new ExpressException('订单提交返回失败'.json_encode($result, true), (array)$result);
         }
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
@@ -149,9 +156,11 @@ class JiyouPlatform extends Platform
             throw new ExpressException('订单提交返回失败', (array)$result);
         }
         if (strtoupper($result["success"]) != "TRUE") {
-            $msg = !empty($result['errorCode']) ? $result["errorCode"] . ":" : "";
-            $msg .= !empty($result['errorInfo']) ? $result["errorInfo"] . ":" : "";
-            $msg .= !empty($result['solution']) ? $result["solution"] : "";
+            $error = $result["error"];
+            $msg = "orderId:{$orderNumber}";
+            $msg .= !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
+            $msg .= !empty($error['errorInfo']) ? $error["errorInfo"] . ":" : "";
+            $msg .= !empty($error['solution']) ? $error["solution"] : "";
             throw new ExpressException($msg);
         }
 
@@ -198,8 +207,6 @@ class JiyouPlatform extends Platform
                 "shipperTelephone" => $orderClass->shipper->phone,
                 "shipperMobile" => $orderClass->shipper->phone,
                 "shipperPostcode" => $orderClass->shipper->zip,
-                "shipperStreetNo" => "",
-                "shipperStreet" => "",
                 "shipperCity" => $orderClass->shipper->city,
                 "shipperProvince" => $orderClass->shipper->state,
             ];
@@ -214,7 +221,6 @@ class JiyouPlatform extends Platform
                 'pieces' => $good->quantity,
                 'netWeight' => $good->weight,
                 'unitPrice' => $good->worth,
-                'productMemo' => '',
                 'customsNo' => $good->hsCode,
             ];
         }
@@ -222,7 +228,6 @@ class JiyouPlatform extends Platform
         $order = [
             'consigneeCompanyName' => $orderClass->recipient->company,
             'consigneeName' => $orderClass->recipient->name,
-            'consigneeStreetNo' => "",
             'street' => $orderClass->recipient->address,
             'city' => $orderClass->recipient->city,
             'province' => $orderClass->recipient->state,
@@ -242,10 +247,6 @@ class JiyouPlatform extends Platform
             'weight' => $orderClass->package->weight,
             'insured' => $orderClass->evaluate > 0 ? "Y" : 'N',
             'goodsCategory' => 'O',
-            'goodsDescription' => '',
-            'memo' => '',
-            'codSum' => '',
-            'codCurrency' => '',
             'declareItems' => $declareItems
         ];
 

@@ -10,7 +10,7 @@ use yiier\crossBorderExpress\contracts\Package;
  * Time: 22:18
  * File: ${FILE_NAME}
  */
-class PHPUnit_Framework_TestCase
+class PHPUnit_Framework_TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * @return \yiier\crossBorderExpress\contracts\Order
@@ -22,7 +22,7 @@ class PHPUnit_Framework_TestCase
 
         $expressOrder = new \yiier\crossBorderExpress\contracts\Order();
         $expressOrder->customerOrderNo = $t->format("YmdHis");
-        $expressOrder->transportCode = "1981";//sprintf("CN%s", $t->format("YmdHis"));
+        $expressOrder->transportCode = "HKPOSTTH";//sprintf("CN%s", $t->format("YmdHis"));
 
         $goods = new Goods();
         $goods->description = 'shoes';

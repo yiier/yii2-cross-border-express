@@ -20,7 +20,6 @@ use yiier\crossBorderExpress\contracts\Package;
 use yiier\crossBorderExpress\contracts\Recipient;
 use yiier\crossBorderExpress\contracts\Shipper;
 use yiier\crossBorderExpress\Express;
-use yiier\crossBorderExpress\platforms\HualeiPlatform;
 use PHPUnit\Framework\TestCase;
 use yiier\crossBorderExpress\platforms\PlatformsName;
 
