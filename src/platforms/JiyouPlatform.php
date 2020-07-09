@@ -105,18 +105,25 @@ class JiyouPlatform extends Platform
         $parameter = $this->formatOrder($order);
 
         // createOrder, createAndAuditOrder
-        $result = $this->client->call('createOrder', [
+        $result = $this->client->call('createAndAuditOrder', [
             'createOrderRequest' => $parameter,
             "userToken" => $this->userToken,
         ]);
         if (isset($result["success"])) {
             if (strtoupper($result["success"]) == "TRUE") {
+                $trackingNo = "";
                 if (!empty($result["trackingNo"])) {
-                    $orderResult->expressTrackingNumber = $result['trackingNo'];
+                    $trackingNo = $result['trackingNo'];
+                } else if (!empty($result["id"])) {
+                    try {
+                        $trackingNo = $this->auditOrder($result['id']);
+                    } catch (ExpressException $e) {
+                    }
                 }
                 if (!empty($result["id"])) {
                     $orderResult->expressNumber = $result['id'];
                 }
+                $orderResult->expressTrackingNumber = $trackingNo;
             } else {
                 $error = $result["error"];
                 $msg = !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
@@ -130,6 +137,34 @@ class JiyouPlatform extends Platform
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
         return $orderResult;
+    }
+
+    /**
+     * 预报订单
+     * @param int $orderId
+     * @return string
+     * @throws ExpressException
+     */
+    protected function auditOrder(int $orderId): string
+    {
+        $result = $this->client->call('auditOrder', [
+            'orderId' => $orderId,
+            "userToken" => $this->userToken,
+        ]);
+
+        var_dump($result);
+        if (isset($result["success"])) {
+            if (strtoupper($result["success"]) == "TRUE") {
+                return $result["trackingNo"];
+            }
+            $error = $result["error"];
+            $msg = !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
+            $msg .= !empty($error['errorInfo']) ? $error["errorInfo"] . ":" : "";
+            $msg .= !empty($error['solution']) ? $error["solution"] : "";
+            throw new ExpressException($msg);
+        } else {
+            throw new ExpressException('订单预报返回失败' . json_encode($result, true), (array)$result);
+        }
     }
 
     /**
