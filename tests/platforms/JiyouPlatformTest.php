@@ -56,7 +56,8 @@ class JiyouPlatformTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateOrder()
     {
-
+        $express = new Express($this->config, PlatformsName::JIYOU_PLATFORM);
+        $express->createOrder($this->getExpressOrder());
     }
 
     public function testGetTransportsByCountryCode()

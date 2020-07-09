@@ -22,7 +22,7 @@ class PHPUnit_Framework_TestCase extends \PHPUnit\Framework\TestCase
 
         $expressOrder = new \yiier\crossBorderExpress\contracts\Order();
         $expressOrder->customerOrderNo = $t->format("YmdHis");
-        $expressOrder->transportCode = "HKPOSTTH";//sprintf("CN%s", $t->format("YmdHis"));
+        $expressOrder->transportCode = "ESBBZDD";//sprintf("CN%s", $t->format("YmdHis"));
 
         $goods = new Goods();
         $goods->description = 'shoes';
