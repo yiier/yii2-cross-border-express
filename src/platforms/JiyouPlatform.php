@@ -111,8 +111,12 @@ class JiyouPlatform extends Platform
         ]);
         if (isset($result["success"])) {
             if (strtoupper($result["success"]) == "TRUE") {
-                $orderResult->expressTrackingNumber = $result['trackingNo'];
-                $orderResult->expressNumber = $result['id'];
+                if (!empty($result["trackingNo"])) {
+                    $orderResult->expressTrackingNumber = $result['trackingNo'];
+                }
+                if (!empty($result["id"])) {
+                    $orderResult->expressNumber = $result['id'];
+                }
             } else {
                 $error = $result["error"];
                 $msg = !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
@@ -121,7 +125,7 @@ class JiyouPlatform extends Platform
                 throw new ExpressException($msg);
             }
         } else {
-            throw new ExpressException('订单提交返回失败'.json_encode($result, true), (array)$result);
+            throw new ExpressException('订单提交返回失败' . json_encode($result, true), (array)$result);
         }
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
