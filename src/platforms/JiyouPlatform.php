@@ -161,25 +161,29 @@ class JiyouPlatform extends Platform
         }
         if (strtoupper($result["success"]) != "TRUE") {
             $error = $result["error"];
-            $msg = "orderId:{$orderNumber}";
+            $msg = "orderId:{$orderNumber}:";
             $msg .= !empty($error['errorCode']) ? $error["errorCode"] . ":" : "";
             $msg .= !empty($error['errorInfo']) ? $error["errorInfo"] . ":" : "";
             $msg .= !empty($error['solution']) ? $error["solution"] : "";
             throw new ExpressException($msg);
         }
 
+        if (empty($result["order"])) {
+            return $orderFee;
+        }
+
         $order = $result["order"];
 
-        $orderFee->orderNumber = $order["trackingNo"];
+        $orderFee->orderNumber = !empty($order["trackingNo"]) ? $order["trackingNo"] : "";
         $orderFee->chargeWeight = $order["balanceWeight"] > 0 ? $order["balanceWeight"] * 1000 : 0; // realWeight 实际重（kg）。 realVolWeight 体积重（kg）。balanceWeight 结算重（kg）。
-        $orderFee->freight = $order["transportFee"] * 100;
-        $orderFee->totalFee = $order["totalFee"] * 100;
-        $orderFee->otherFee = $order["otherFee"] * 100;
-        $orderFee->customerOrderNumber = $order["orderNo"];
+        $orderFee->freight = !empty($order["transportFee"]) ? $order["transportFee"] * 100 : 0;
+        $orderFee->totalFee = !empty($order["totalFee"]) ? $order["totalFee"] * 100 : 0;
+        $orderFee->otherFee = !empty($order["otherFee"]) ? $order["otherFee"] * 100 : 0;
+        $orderFee->customerOrderNumber = !empty($order["orderNo"]) ? $order["orderNo"] : "";
         $orderFee->country = CountryCodes::getEnName($order["destinationCountryCode"]);
-        $orderFee->transportCode = $order["transportWayCode"];
-        $orderFee->transportName = $order["transportWayName"];
-        $orderFee->datetime = $order["createTime"]; //2019-03-02T18:26:25
+        $orderFee->transportCode = !empty($order["transportWayCode"]) ? $order["transportWayCode"] : "";
+        $orderFee->transportName = !empty($order["transportWayName"]) ? $order["transportWayName"] : "";
+        $orderFee->datetime = !empty($order["createTime"]) ? $order["createTime"] : ""; //2019-03-02T18:26:25
         $orderFee->data = json_encode($result["order"], JSON_UNESCAPED_UNICODE);
 
         return $orderFee;
