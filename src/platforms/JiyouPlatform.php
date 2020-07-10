@@ -172,7 +172,8 @@ class JiyouPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        $orderKey = "trackingNo"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）
+//        $orderKey = "trackingNo"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）
+        $orderKey = "oid"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）
 
         return sprintf("%s/xms/client/order_online!printPdf.action?userToken=%s&%s=%s&printSelect=%d&pageSizeCode=%d&downloadPdf=0",
             $this->host, $this->userToken, $orderKey, $orderNumber, $this->printSelect, $this->pageSizeCode);
@@ -185,10 +186,12 @@ class JiyouPlatform extends Platform
     {
         $orderFee = new OrderFee();
 
+        $key = "orderId";
+
         $result = $this->client->call('lookupOrder', [
             "userToken" => $this->userToken,
             "lookupOrderRequest" => [
-                "trackingNo" => $orderNumber,
+                $key => $orderNumber,
             ]
         ]);
         if (empty($result["success"])) {
