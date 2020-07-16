@@ -33,6 +33,16 @@ class WanbPlatform extends Platform
     private $host = '';
 
     /**
+     * @var string $shippingMethod
+     */
+    private $shippingMethod = "3HPA";
+
+    /**
+     * @var string $warehouseCode
+     */
+    private $warehouseCode = "SZ";
+
+    /**
      * @inheritDoc
      */
     public function getClient()
@@ -46,6 +56,9 @@ class WanbPlatform extends Platform
                 $nounce
             )
         ];
+
+        $this->shippingMethod = $this->config->get("shipping_method");
+        $this->warehouseCode = $this->config->get("warehouse_code");
 
         $client = new \GuzzleHttp\Client([
             'headers' => $headers,
@@ -72,9 +85,10 @@ class WanbPlatform extends Platform
     {
         $orderResult = new OrderResult();
         $parameter = $this->formatOrder($order);
-
-        $body = $this->client->get($this->host . "/api/whoami")->getBody();
-        var_dump($body->getContents());
+        $result = $this->client->post($this->host . "/api/parcels", [
+            'body' => json_encode($parameter, true)
+        ])->getBody();
+        var_dump($this->parseResult($result));
         die;
     }
 
@@ -117,6 +131,24 @@ class WanbPlatform extends Platform
     }
 
     /**
+     * @param string $result
+     * @return array
+     * @throws ExpressException
+     */
+    protected function parseResult(string $result): array
+    {
+        $arr = json_decode($result, true);
+        if (empty($arr) || !isset($arr['Succeeded'])) {
+            throw new ExpressException('Invalid response: ' . $result, 400);
+        }
+        if ($arr["Succeeded"] != true) {
+            $message = json_encode($arr, true);
+            throw new ExpressException($message);
+        }
+        return $arr;
+    }
+
+    /**
      * 格式化所需要的数据
      *
      * @param Order $orderClass
@@ -139,7 +171,7 @@ class WanbPlatform extends Platform
         }
 
         // 收件人
-        $declareItems = [];
+        $items = [];
         foreach ($orderClass->goods as $good) {
             $declareItems[] = [
                 'name' => $good->description,
@@ -149,55 +181,49 @@ class WanbPlatform extends Platform
                 'unitPrice' => $good->worth,
                 'customsNo' => $good->hsCode,
             ];
+            $items[] = [
+                "GoodsId" => "",
+                "GoodsTitle" => $good->description,
+                "DeclaredNameEn" => $good->description,
+                "DeclaredNameCn" => "$good->cnDescription",
+                "DeclaredValue" => [
+                    "Code" => "USD",
+                    "Value" => $good->worth
+                ],
+                "WeightInKg" => $good->weight,
+                "Quantity" => $good->quantity,
+                "HSCode" => $good->hsCode,
+                "CaseCode" => "",
+                "SalesUrl" => "",
+                "IsSensitive" => false,
+                "Brand" => "",
+                "Model" => "",
+                "MaterialCn" => $good->cnMaterial,
+                "MaterialEn" => $good->enMaterial,
+                "UsageCn" => "",
+                "UsageEn" => "",
+            ];
         }
 
-        $items = [];
-        $items[] = [
-            "GoodsId" => "GoodsId",
-            "GoodsTitle" => "GoodsTitle",
-            "DeclaredNameEn" => "Test",
-            "DeclaredNameCn" => "品名测试",
-            "DeclaredValue" => [
-                "Code" => ["USD",
-                    "Value" => 5.0
-                ]
-            ],
-            "WeightInKg" => 0.6,
-            "Quantity" => 2,
-            "HSCode" => "",
-            "CaseCode" => "",
-            "SalesUrl" => "http://www.amazon.co.uk/gp/product/B00FEDIPQ4",
-            "IsSensitive" => false,
-            "Brand" => "",
-            "Model" => "",
-            "MaterialCn" => "",
-            "MaterialEn" => "",
-            "UsageCn" => "",
-            "UsageEn" => "",
-        ];
-
-        $order = [
-            'ReferenceId' => '',
+        return [
+            'ReferenceId' => $orderClass->customerOrderNo,
             'ShippingAddress' => [
-                "Company" => "Company",
-                "Street1" => "Street1",
-                "Street2" => "Street1",
-                "Street3" => null,
-                "City" => "City",
-                "Province" => "",
-                "Country" => "",
-                "CountryCode" => "GB",
-                "Postcode" => "NW1 6XE",
-                "Contacter" => "Jon Snow",
-                "Tel" => "134567890",
-                "Email" => "",
-                "TaxId" => ""
+                "Company" => $orderClass->recipient->company,
+                "Street1" => $orderClass->recipient->address,
+                "Street2" => $orderClass->recipient->doorplate,
+                "City" => $orderClass->recipient->city,
+                "Province" => $orderClass->recipient->state,
+                "CountryCode" => $orderClass->recipient->countryCode,
+                "Postcode" => $orderClass->recipient->zip,
+                "Contacter" => $orderClass->recipient->name,
+                "Tel" => $orderClass->recipient->phone,
+                "Email" => $orderClass->recipient->email,
             ],
-            'WeightInKg' => 0,
+            'WeightInKg' => $orderClass->package->weight,
             'ItemDetails' => $items,
             'TotalValue' => [
-                'Code' => '',
-                'Value' => 0,
+                "Code" => "USD",
+                "Value" => $orderClass->package->declareWorth,
             ],
             'TotalVolume' => [
                 'Height' => $orderClass->package->height,
@@ -205,22 +231,16 @@ class WanbPlatform extends Platform
                 'Width' => $orderClass->package->weight,
                 'Unit' => "CM",
             ],
-            'WithBatteryType' => '', // NOBattery,WithBattery,Battery
-            'Notes' => '',
-            'BatchNo' => '',
-            'WarehouseCode' => '',
-            'TrackingNumber' => '',
-            'ShippingMethod' => '',
+            'WithBatteryType' => $orderClass->withBattery == 1 ? "WithBattery" : "NOBattery", // NOBattery,WithBattery,Battery
+            'Notes' => $orderClass->package->description,
+            'WarehouseCode' => $this->warehouseCode,
+            'ShippingMethod' => $this->shippingMethod,
             'ItemType' => 'SPX',
             'TradeType' => 'B2C',
             'IsMPS' => false,
-            //'MPSType' => 'Normal', // Normal, FBA
-            //'Cases' => $declareItems,
             'AllowRemoteArea' => true,
             'AutoConfirm' => true,
             'ShipperInfo' => $shipper,
         ];
-
-        return array_merge($order, $shipper);
     }
 }
