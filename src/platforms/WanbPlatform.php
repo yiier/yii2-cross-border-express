@@ -47,8 +47,6 @@ class WanbPlatform extends Platform
             )
         ];
 
-        var_dump($headers);
-
         $client = new \GuzzleHttp\Client([
             'headers' => $headers,
             'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
@@ -72,9 +70,12 @@ class WanbPlatform extends Platform
      */
     public function createOrder(Order $order): OrderResult
     {
-        var_dump($this->client->getHeaders());die;
+        $orderResult = new OrderResult();
+        $parameter = $this->formatOrder($order);
+
         $body = $this->client->get($this->host . "/api/whoami")->getBody();
-        var_dump($body);die;
+        var_dump($body->getContents());
+        die;
     }
 
     /**
@@ -113,5 +114,113 @@ class WanbPlatform extends Platform
             $return .= chr(mt_Rand(0, 255));
         }
         return $return;
+    }
+
+    /**
+     * 格式化所需要的数据
+     *
+     * @param Order $orderClass
+     * @return array
+     */
+    protected function formatOrder(Order $orderClass): array
+    {
+        $shipper = [];
+        if ($orderClass->shipper) {
+            // 发件人
+            $shipper = [
+                'CountryCode' => $orderClass->shipper->countryCode,
+                'Province' => $orderClass->shipper->state,
+                'City' => $orderClass->shipper->city,
+                'Postcode' => $orderClass->shipper->zip,
+                'Name' => $orderClass->shipper->name,
+                'Address' => $orderClass->shipper->address,
+                'ContactInfo' => $orderClass->shipper->phone,
+            ];
+        }
+
+        // 收件人
+        $declareItems = [];
+        foreach ($orderClass->goods as $good) {
+            $declareItems[] = [
+                'name' => $good->description,
+                'cnName' => $good->cnDescription,
+                'pieces' => $good->quantity,
+                'netWeight' => $good->weight,
+                'unitPrice' => $good->worth,
+                'customsNo' => $good->hsCode,
+            ];
+        }
+
+        $items = [];
+        $items[] = [
+            "GoodsId" => "GoodsId",
+            "GoodsTitle" => "GoodsTitle",
+            "DeclaredNameEn" => "Test",
+            "DeclaredNameCn" => "品名测试",
+            "DeclaredValue" => [
+                "Code" => ["USD",
+                    "Value" => 5.0
+                ]
+            ],
+            "WeightInKg" => 0.6,
+            "Quantity" => 2,
+            "HSCode" => "",
+            "CaseCode" => "",
+            "SalesUrl" => "http://www.amazon.co.uk/gp/product/B00FEDIPQ4",
+            "IsSensitive" => false,
+            "Brand" => "",
+            "Model" => "",
+            "MaterialCn" => "",
+            "MaterialEn" => "",
+            "UsageCn" => "",
+            "UsageEn" => "",
+        ];
+
+        $order = [
+            'ReferenceId' => '',
+            'ShippingAddress' => [
+                "Company" => "Company",
+                "Street1" => "Street1",
+                "Street2" => "Street1",
+                "Street3" => null,
+                "City" => "City",
+                "Province" => "",
+                "Country" => "",
+                "CountryCode" => "GB",
+                "Postcode" => "NW1 6XE",
+                "Contacter" => "Jon Snow",
+                "Tel" => "134567890",
+                "Email" => "",
+                "TaxId" => ""
+            ],
+            'WeightInKg' => 0,
+            'ItemDetails' => $items,
+            'TotalValue' => [
+                'Code' => '',
+                'Value' => 0,
+            ],
+            'TotalVolume' => [
+                'Height' => $orderClass->package->height,
+                'Length' => $orderClass->package->length,
+                'Width' => $orderClass->package->weight,
+                'Unit' => "CM",
+            ],
+            'WithBatteryType' => '', // NOBattery,WithBattery,Battery
+            'Notes' => '',
+            'BatchNo' => '',
+            'WarehouseCode' => '',
+            'TrackingNumber' => '',
+            'ShippingMethod' => '',
+            'ItemType' => 'SPX',
+            'TradeType' => 'B2C',
+            'IsMPS' => false,
+            //'MPSType' => 'Normal', // Normal, FBA
+            //'Cases' => $declareItems,
+            'AllowRemoteArea' => true,
+            'AutoConfirm' => true,
+            'ShipperInfo' => $shipper,
+        ];
+
+        return array_merge($order, $shipper);
     }
 }
