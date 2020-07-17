@@ -75,21 +75,25 @@ class WanbPlatform extends Platform
      */
     public function getTransportsByCountryCode(string $countryCode)
     {
-        // TODO: Implement getTransportsByCountryCode() method.
+        return [];
     }
 
     /**
-     * @inheritDoc
+     * @param Order $order
+     * @return OrderResult
+     * @throws ExpressException
      */
     public function createOrder(Order $order): OrderResult
     {
-        $orderResult = new OrderResult();
         $parameter = $this->formatOrder($order);
-        $result = $this->client->post($this->host . "/api/parcels", [
-            'body' => json_encode($parameter, true)
-        ])->getBody();
-        var_dump($this->parseResult($result));
-        die;
+        try {
+            $result = $this->client->post($this->host . "/api/parcels", [
+                'body' => json_encode($parameter, true)
+            ])->getBody();
+            return $this->parseResult($result);
+        } catch (ExpressException $exception) {
+            throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
+        }
     }
 
     /**
@@ -97,15 +101,28 @@ class WanbPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        // TODO: Implement getPrintUrl() method.
+        return "";
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @return string
+     */
+    protected function getPrintFile(string $orderNumber): string
+    {
+        $url = sprintf("%s/api/parcels/%s/label", $this->host, $orderNumber);
+        $result = $this->client->get($url);
+        return $result->getBody()->getContents();
+    }
+
+
+    /**
+     * @param string $orderNumber
+     * @return OrderFee
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        // TODO: Implement getOrderFee() method.
+        return new OrderFee();
     }
 
     /**
@@ -113,7 +130,7 @@ class WanbPlatform extends Platform
      */
     public function getOrderAllFee(array $query = []): array
     {
-        // TODO: Implement getOrderAllFee() method.
+        return [];
     }
 
     /**
@@ -132,10 +149,57 @@ class WanbPlatform extends Platform
 
     /**
      * @param string $result
+     * @return OrderResult
+     * @throws ExpressException
+     */
+    protected function parseResult(string $result): OrderResult
+    {
+        $resData = $this->parseExpress($result);
+
+        $orderResult = new OrderResult();
+        $orderResult->data = $result;
+        $orderResult->expressNumber = !empty($resData["ProcessCode"]) ? $resData["ProcessCode"] : "";
+        $orderResult->expressTrackingNumber = !empty($resData["TrackingNumber"]) ? $resData["TrackingNumber"] : $this->getTracingNumber($resData["ProcessCode"]);
+        return $orderResult;
+    }
+
+    /**
+     * @param string $processCode
+     * @return string
+     * @throws ExpressException
+     */
+    protected function getTracingNumber(string $processCode): string
+    {
+        $url = $this->host . sprintf("/api/parcels/%s/confirmation", $processCode);
+        $result = $this->client->post($url)->getBody();
+        try {
+            $res = $this->parseExpress($result);
+            if (!empty($res["TrackingNumber"])) {
+                return $res["TrackingNumber"];
+            }
+        } catch (ExpressException $e) {
+            throw new ExpressException(sprintf("确认交运行包裹失败 %s", $e->getMessage()));
+        }
+
+        $url = $this->host . sprintf("/api/parcels/%s", $processCode);
+        try {
+            $res = $this->parseExpress($this->client->get($url)->getBody());
+            if (!empty($res["FinalTrackingNumber"])) {
+                return $res["FinalTrackingNumber"];
+            }
+        } catch (ExpressException $e) {
+            throw new ExpressException(sprintf("获取包裹失败 %s", $e->getMessage()));
+        }
+
+        return "";
+    }
+
+    /**
+     * @param string $result
      * @return array
      * @throws ExpressException
      */
-    protected function parseResult(string $result): array
+    protected function parseExpress(string $result): array
     {
         $arr = json_decode($result, true);
         if (empty($arr) || !isset($arr['Succeeded'])) {
@@ -145,7 +209,7 @@ class WanbPlatform extends Platform
             $message = json_encode($arr, true);
             throw new ExpressException($message);
         }
-        return $arr;
+        return !empty($arr["Data"]) ? $arr["Data"] : [];
     }
 
     /**

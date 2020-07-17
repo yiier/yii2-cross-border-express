@@ -152,7 +152,6 @@ class JiyouPlatform extends Platform
             "userToken" => $this->userToken,
         ]);
 
-        var_dump($result);
         if (isset($result["success"])) {
             if (strtoupper($result["success"]) == "TRUE") {
                 return $result["trackingNo"];
