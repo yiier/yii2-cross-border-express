@@ -1,30 +1,31 @@
 {
-  "name": "yiier/yii2-cross-border-express",
-  "description": "跨境快递接口",
-  "type": "yii2-extension",
-  "keywords": [
-    "yii2",
-    "extension",
-    "express"
-  ],
-  "license": "BSD-4-Clause",
-  "authors": [
-    {
-      "name": "forecho",
-      "email": "caizhenghai@gmail.com"
+    "name": "yiier/yii2-cross-border-express",
+    "description": "跨境快递接口",
+    "type": "yii2-extension",
+    "keywords": [
+        "yii2",
+        "extension",
+        "express"
+    ],
+    "license": "BSD-4-Clause",
+    "authors": [
+        {
+            "name": "forecho",
+            "email": "caizhenghai@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "ext-simplexml": "*",
+        "guzzlehttp/guzzle": "^6.3",
+        "yiisoft/yii2": "^2.0",
+        "econea/nusoap": "^0.9.6",
+        "ext-json": "*",
+        "yiier/yii2-aliyun-oss": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "yiier\\crossBorderExpress\\": "src"
+        }
     }
-  ],
-  "require": {
-    "php": ">=7.1",
-    "ext-simplexml": "*",
-    "guzzlehttp/guzzle": "^6.3",
-    "yiisoft/yii2": "^2.0",
-    "econea/nusoap": "^0.9.6",
-      "ext-json": "*"
-  },
-  "autoload": {
-    "psr-4": {
-      "yiier\\crossBorderExpress\\": "src"
-    }
-  }
 }

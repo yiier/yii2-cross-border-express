@@ -10,9 +10,9 @@
 
 namespace yiier\crossBorderExpress\platforms;
 
-
 use GuzzleHttp\Client;
 use nusoap_client;
+use yiier\AliyunOSS\OSS;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
@@ -98,20 +98,36 @@ class WanbPlatform extends Platform
 
     /**
      * @inheritDoc
+     * @throws \OSS\Core\OssException
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        return "";
+        return $this->getPrintFile($orderNumber);
     }
 
     /**
      * @param string $orderNumber
      * @return string
+     * @throws \OSS\Core\OssException
      */
     protected function getPrintFile(string $orderNumber): string
     {
         $url = sprintf("%s/api/parcels/%s/label", $this->host, $orderNumber);
         $result = $this->client->get($url);
+        // TODO PDF传到阿里云oss
+        $oss = new OSS();
+        $oss->accessKeyId = "";
+        $oss->bucket = "";
+        $oss->accessKeySecret = "";
+        $oss->lanDomain = "";
+        $oss->wanDomain = "";
+        $oss->isInternal = false;
+
+        var_dump($result->getHeaders());die;
+
+        $oss->createDir('storage/express/');
+        $oss->upload($result->getHeader());
+        return "";
         return $result->getBody()->getContents();
     }
 
