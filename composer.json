@@ -21,7 +21,7 @@
         "yiisoft/yii2": "^2.0",
         "econea/nusoap": "^0.9.6",
         "ext-json": "*",
-        "yiier/yii2-aliyun-oss": "^1.0"
+        "yiier/yii2-aliyun-oss": "*"
     },
     "autoload": {
         "psr-4": {

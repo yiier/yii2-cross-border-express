@@ -112,23 +112,35 @@ class WanbPlatform extends Platform
      */
     protected function getPrintFile(string $orderNumber): string
     {
+        $fileName = sprintf("%s.pdf", $orderNumber);
+        $filePath = "./" . $fileName;
         $url = sprintf("%s/api/parcels/%s/label", $this->host, $orderNumber);
-        $result = $this->client->get($url);
-        // TODO PDF传到阿里云oss
-        $oss = new OSS();
-        $oss->accessKeyId = "";
-        $oss->bucket = "";
-        $oss->accessKeySecret = "";
-        $oss->lanDomain = "";
-        $oss->wanDomain = "";
-        $oss->isInternal = false;
+        $this->client->get($url, [
+            "save_to" => $filePath
+        ]);
+        // PDF传到阿里云oss
+        $oss = new OSS([
+            "accessKeyId" => $this->config->get("oss_access_key_id"),
+            "bucket" => $this->config->get("oss_bucket"),
+            "accessKeySecret" => $this->config->get("oss_access_key_secret"),
+            "lanDomain" => $this->config->get("oss_lan_domain"),
+            "wanDomain" => $this->config->get("oss_wan_domain"),
+            "isInternal" => false,
+        ]);
 
-        var_dump($result->getHeaders());die;
+        $storagePath = 'storage/express/';
+        if ($oss->has($storagePath . $fileName)) {
+            return sprintf("http://%s.%s/%s", $this->config->get("oss_bucket"), $this->config->get("oss_wan_domain"), $storagePath . $fileName);
+        }
 
-        $oss->createDir('storage/express/');
-        $oss->upload($result->getHeader());
+        if (!$oss->has($storagePath)) {
+            $oss->createDir($storagePath);
+        }
+
+        if ($res = $oss->upload($storagePath . $fileName, $filePath)) {
+            return sprintf("http://%s/%s", $res["oss-requestheaders"]["Host"], $storagePath . $fileName);
+        }
         return "";
-        return $result->getBody()->getContents();
     }
 
 

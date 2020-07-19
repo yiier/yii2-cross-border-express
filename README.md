@@ -7,6 +7,7 @@ Cross Border Express for Yii2
 - 飞特物流
 - 华磊物流
 - 集优物流
+- 万邦物流
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -77,6 +78,18 @@ $config = [
         'jiyou' => [
             'host' => '',
             'user_token' => ''
+        ],
+        'wanb' => [
+            "host" => "http://api-sbx.wanbexpress.com",
+            "account_no" => "",
+            "token" => "",
+            "shipping_method" => "",
+            "warehouse_code" => "",
+            "oss_wan_domain" => "oss-cn-beijing.aliyuncs.com",
+            "oss_lan_domain" => "oss-cn-beijing-internal.aliyuncs.com",
+            "oss_bucket" => "",
+            "oss_access_key_id" => "",
+            "oss_access_key_secret" => "",
         ]
     ],
 ];
@@ -190,3 +203,4 @@ $express->getOrderFee($orderNumber);
 - [飞特接口文档](https://docs.qq.com/doc/DV1lrcURDTHNhRkR3)
 - [华磊接口文档](http://www.sz56t.com:8090/pages/viewpage.action?pageId=3473454)
 - [集优接口文档](http://120.25.155.64:8086/xms/download/api/HLT-XMS-API.docx)
+- [万邦接口文档](http://apidoc.wanbexpress.com/)
