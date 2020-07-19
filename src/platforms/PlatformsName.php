@@ -17,4 +17,5 @@ class PlatformsName
     const ETOWER_PLATFORM = "etower";
     const HUALEI_PLATFORM = "hualei";
     const JIYOU_PLATFORM = "jiyou";
+    const WANB_PLATFORM = "wanb";
 }
