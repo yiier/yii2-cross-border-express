@@ -112,12 +112,6 @@ class WanbPlatform extends Platform
      */
     protected function getPrintFile(string $orderNumber): string
     {
-        $fileName = sprintf("%s.pdf", $orderNumber);
-        $filePath = "./" . $fileName;
-        $url = sprintf("%s/api/parcels/%s/label", $this->host, $orderNumber);
-        $this->client->get($url, [
-            "save_to" => $filePath
-        ]);
         // PDF传到阿里云oss
         $oss = new OSS([
             "accessKeyId" => $this->config->get("oss_access_key_id"),
@@ -128,18 +122,29 @@ class WanbPlatform extends Platform
             "isInternal" => false,
         ]);
 
+        $fileName = sprintf("%s.pdf", $orderNumber);
+        $filePath = "/tmp/" . $fileName;
+
         $storagePath = 'storage/express/';
         if ($oss->has($storagePath . $fileName)) {
             return sprintf("http://%s.%s/%s", $this->config->get("oss_bucket"), $this->config->get("oss_wan_domain"), $storagePath . $fileName);
         }
+
+        $url = sprintf("%s/api/parcels/%s/label", $this->host, $orderNumber);
+        $this->client->get($url, [
+            "save_to" => $filePath
+        ]);
+
 
         if (!$oss->has($storagePath)) {
             $oss->createDir($storagePath);
         }
 
         if ($res = $oss->upload($storagePath . $fileName, $filePath)) {
+            unlink($filePath);
             return sprintf("http://%s/%s", $res["oss-requestheaders"]["Host"], $storagePath . $fileName);
         }
+        unlink($filePath);
         return "";
     }
 
@@ -234,7 +239,11 @@ class WanbPlatform extends Platform
             throw new ExpressException('Invalid response: ' . $result, 400);
         }
         if ($arr["Succeeded"] != true) {
-            $message = json_encode($arr, true);
+            if ($err = $arr["Error"]) {
+                $message = $err["Message"];
+            } else {
+                $message = json_encode($arr, true);
+            }
             throw new ExpressException($message);
         }
         return !empty($arr["Data"]) ? $arr["Data"] : [];
