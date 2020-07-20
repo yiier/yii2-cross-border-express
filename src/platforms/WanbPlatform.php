@@ -123,7 +123,7 @@ class WanbPlatform extends Platform
         ]);
 
         $fileName = sprintf("%s.pdf", $orderNumber);
-        $filePath = "./" . $fileName;
+        $filePath = "/tmp/" . $fileName;
 
         $storagePath = 'storage/express/';
         if ($oss->has($storagePath . $fileName)) {
@@ -141,8 +141,10 @@ class WanbPlatform extends Platform
         }
 
         if ($res = $oss->upload($storagePath . $fileName, $filePath)) {
+            unlink($filePath);
             return sprintf("http://%s/%s", $res["oss-requestheaders"]["Host"], $storagePath . $fileName);
         }
+        unlink($filePath);
         return "";
     }
 
