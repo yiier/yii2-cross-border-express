@@ -257,20 +257,6 @@ class WanbPlatform extends Platform
      */
     protected function formatOrder(Order $orderClass): array
     {
-        $shipper = [];
-        if ($orderClass->shipper) {
-            // 发件人
-            $shipper = [
-                'CountryCode' => $orderClass->shipper->countryCode,
-                'Province' => $orderClass->shipper->state,
-                'City' => $orderClass->shipper->city,
-                'Postcode' => $orderClass->shipper->zip,
-                'Name' => $orderClass->shipper->name,
-                'Address' => $orderClass->shipper->address,
-                'ContactInfo' => $orderClass->shipper->phone,
-            ];
-        }
-
         // 收件人
         $items = [];
         foreach ($orderClass->goods as $good) {
@@ -329,7 +315,7 @@ class WanbPlatform extends Platform
             'TotalVolume' => [
                 'Height' => $orderClass->package->height,
                 'Length' => $orderClass->package->length,
-                'Width' => $orderClass->package->weight,
+                'Width' => $orderClass->package->width,
                 'Unit' => "CM",
             ],
             'WithBatteryType' => $orderClass->withBattery == 1 ? "WithBattery" : "NOBattery", // NOBattery,WithBattery,Battery
@@ -340,8 +326,7 @@ class WanbPlatform extends Platform
             'TradeType' => 'B2C',
             'IsMPS' => false,
             'AllowRemoteArea' => true,
-            'AutoConfirm' => true,
-            'ShipperInfo' => $shipper,
+            'AutoConfirm' => true
         ];
     }
 }
