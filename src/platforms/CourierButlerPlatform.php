@@ -145,7 +145,6 @@ class CourierButlerPlatform extends Platform
     protected function formatOrder(Order $orderClass): array
     {
         $invoice = [];
-        $cargovolume = [];
         foreach ($orderClass->goods as $good) {
             $invoice[] = [
                 "sku" => $good->sku,
@@ -155,44 +154,18 @@ class CourierButlerPlatform extends Platform
                 "unit_code" => "PCE",
                 "invoice_unitcharge" => $good->worth,
                 "hs_code" => $good->hsCode,
-//                "invoice_note" => "",
-//                "invoice_url" => "",
-//                "invoice_info" => "",
                 "invoice_material" => $good->enMaterial,
-//                "invoice_spec" => "",
-//                "invoice_use" => "",
-//                "invoice_brand" => "",
-//                "posttax_num" => "",
             ];
         }
-
-
-//        $cargovolume[] = [
-//            "child_number" => "",
-//            "involume_length" => "",
-//            "involume_width" => "",
-//            "involume_height" => "",
-//            "involume_grossweight" => "",
-//        ];
-
-//        $extraService[] = [
-//            "extra_servicecode" => "",
-//            "extra_servicevalue" => "",
-//            "extra_servicenote" => "",
-//        ];
 
         return [
             'reference_no' => $orderClass->customerOrderNo,
             'shipping_method' => $orderClass->transportCode,
-//            'shipping_method_no' => '',
             'order_weight' => $orderClass->package->weight,
             'order_pieces' => $orderClass->package->quantity,
             'cargotype' => "W",
             'mail_cargo_type' => '2',
-//            'buyer_id' => '',
             'order_info' => $orderClass->package->description,
-//            'platform_id' => '',
-//            'custom_hawbcode' => '',
             'shipper' => [
                 "shipper_name" => $orderClass->shipper->name,
                 "shipper_company" => $orderClass->shipper->company,
@@ -202,11 +175,9 @@ class CourierButlerPlatform extends Platform
                 "shipper_district" => $orderClass->shipper->address,
                 "shipper_street" => $orderClass->shipper->address,
                 "shipper_postcode" => $orderClass->shipper->zip,
-//                "shipper_areacode" => "",
                 "shipper_telephone" => $orderClass->shipper->phone,
                 "shipper_mobile" => $orderClass->shipper->phone,
                 "shipper_email" => $orderClass->shipper->email,
-//                "shipper_fax" => "",
             ],
             "consignee" => [
                 "consignee_name" => $orderClass->recipient->name,
@@ -222,15 +193,8 @@ class CourierButlerPlatform extends Platform
                 "consignee_telephone" => $orderClass->recipient->phone,
                 "consignee_mobile" => $orderClass->recipient->phone,
                 "consignee_email" => $orderClass->recipient->email,
-//                "consignee_fax" => "",
-//                "consignee_certificatetype" => "",
-//                "consignee_certificatecode" => "",
-//                "consignee_credentials_period" => "",
-//                "consignee_tariff" => "",
             ],
-            "invoice" => $invoice,
-//            "cargovolume" => $cargovolume,
-//            "extra_service" => $extraService,
+            "invoice" => $invoice
         ];
     }
 }
