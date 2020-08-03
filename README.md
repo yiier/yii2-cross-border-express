@@ -8,6 +8,7 @@ Cross Border Express for Yii2
 - 华磊物流
 - 集优物流
 - 万邦物流
+- 速递管家
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -204,3 +205,4 @@ $express->getOrderFee($orderNumber);
 - [华磊接口文档](http://www.sz56t.com:8090/pages/viewpage.action?pageId=3473454)
 - [集优接口文档](http://120.25.155.64:8086/xms/download/api/HLT-XMS-API.docx)
 - [万邦接口文档](http://apidoc.wanbexpress.com/)
+- [速递管家接口文档](http://lfn.rtb56.com/usercenter/manager/api_document.aspx)

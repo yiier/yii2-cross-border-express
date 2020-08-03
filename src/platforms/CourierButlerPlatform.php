@@ -75,14 +75,16 @@ class CourierButlerPlatform extends Platform
     {
         $this->body["serviceMethod"] = "getnewlabel";
         $this->body["paramsJson"] = json_encode([
-            "lable_file_type" => "1",
-            "lable_paper_type" => "1",
-            "lable_content_type" => "1",
-            "additional_info" => [
-                "lable_print_invoiceinfo" => "N",
-                "lable_print_buyerid" => "N",
-                "lable_print_datetime" => "Y",
-                "customsdeclaration_print_actualweight" => "N",
+            "configInfo" => [
+                "lable_file_type" => "1",
+                "lable_paper_type" => "1",
+                "lable_content_type" => "1",
+                "additional_info" => [
+                    "lable_print_invoiceinfo" => "N",
+                    "lable_print_buyerid" => "N",
+                    "lable_print_datetime" => "Y",
+                    "customsdeclaration_print_actualweight" => "N",
+                ]
             ],
             "listorder" => [
                 [
@@ -92,7 +94,7 @@ class CourierButlerPlatform extends Platform
         ], true);
         try {
             $result = $this->client->post($this->host . "/webservice/PublicService.asmx/ServiceInterfaceUTF8", [
-                'body' => $this->body,
+                'form_params' => $this->body,
             ])->getBody();
             $res = $this->parseResult($result);
             return $res[0]["lable_file"];
@@ -121,10 +123,10 @@ class CourierButlerPlatform extends Platform
 
     /**
      * @param string $result
-     * @return OrderResult
+     * @return array
      * @throws ExpressException
      */
-    protected function parseResult(string $result): OrderResult
+    protected function parseResult(string $result)
     {
         $res = json_decode($result, true);
         if ($res["success"] == 1) {
