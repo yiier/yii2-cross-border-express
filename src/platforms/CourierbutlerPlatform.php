@@ -12,7 +12,7 @@ use yiier\crossBorderExpress\contracts\OrderResult;
 use yiier\crossBorderExpress\contracts\Transport;
 use yiier\crossBorderExpress\exceptions\ExpressException;
 
-class CourierButlerPlatform extends Platform
+class CourierbutlerPlatform extends Platform
 {
     private $host = "http://lfn.rtb56.com";
     private $body = [];
