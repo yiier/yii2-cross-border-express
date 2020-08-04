@@ -91,6 +91,11 @@ $config = [
             "oss_bucket" => "",
             "oss_access_key_id" => "",
             "oss_access_key_secret" => "",
+        ],
+        'courierbutler' => [
+            "host" => "http://lfn.rtb56.com",
+            "app_token" => "",
+            "app_key" => "",
         ]
     ],
 ];
