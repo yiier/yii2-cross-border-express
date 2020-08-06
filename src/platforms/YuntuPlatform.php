@@ -31,7 +31,7 @@ class YuntuPlatform extends Platform
     {
         $headers = [
             'Content-Type' => 'application/json; charset=utf8',
-            'Authorization' => ' basic ' . $this->buildToken(),
+            'Authorization' => 'Basic ' . $this->buildToken(),
             'Accept-Language' => 'en-us',
             'Accept' => 'text/json',
         ];
@@ -88,8 +88,8 @@ class YuntuPlatform extends Platform
     {
         $orderResult = new OrderResult();
         $api = '/api/WayBill/CreateOrder';
-        $waybill[] = $this->formatOrder($order);
-        $body = ['body' => json_encode($waybill)];
+        $waybill = $this->formatOrder($order);
+        $body = ['body' => json_encode([$waybill])];
 
         $response = $this->client->post($this->host . $api, $body);
         $result = $this->parseResult($response->getBody());
@@ -115,11 +115,11 @@ class YuntuPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        $this->host .= "/api/Label/Print";
+        $url = $this->host . "/api/Label/Print";
         $data = [$orderNumber];
         $body = ['body' => json_encode($data)];
 
-        $response = $this->client->post($this->host, $body);
+        $response = $this->client->post($url, $body);
 
         $result = $this->parseResult($response->getBody());
 
@@ -140,7 +140,7 @@ class YuntuPlatform extends Platform
     {
         $api = '/api/Freight/GetShippingFeeDetail';
         $query = [
-            'query' => ['OrderNumber' => $orderNumber],
+            'query' => ['wayBillNumber' => $orderNumber],
         ];
 
         $response = $this->client->get($this->host . $api, $query);
@@ -200,9 +200,6 @@ class YuntuPlatform extends Platform
         return [
             'CustomerOrderNumber' => $orderClass->customerOrderNo,
             'ShippingMethodCode' => $orderClass->transportCode,
-            'Length' => $orderClass->package->length,
-            'Width' => $orderClass->package->width,
-            'Height' => $orderClass->package->height,
             'PackageCount' => $orderClass->package->quantity,
             'Weight' => $orderClass->package->weight,
             'Receiver' => [
