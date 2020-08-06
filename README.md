@@ -204,7 +204,7 @@ $express->getOrderFee($orderNumber);
 
 ## 相关链接
 
-- [云途接口文档](https://docs.qq.com/pdf/DV3p6TkZwWVFWQlFh)
+- [云途接口文档](https://docs.qq.com/pdf/DVldoV2JWQ2hTQWNH)
 - [三态接口文档](http://www.sfcservice.com/api-doc)
 - [飞特接口文档](https://docs.qq.com/doc/DV1lrcURDTHNhRkR3)
 - [华磊接口文档](http://www.sz56t.com:8090/pages/viewpage.action?pageId=3473454)

@@ -7,6 +7,7 @@
 
 namespace yiier\crossBorderExpress\platforms;
 
+use Exception;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
@@ -16,7 +17,7 @@ use yiier\crossBorderExpress\exceptions\ExpressException;
 
 class YuntuPlatform extends Platform
 {
-    const HOST = 'http://api.yunexpress.com/LMS.API/api';
+    const HOST = 'http://oms.api.yunexpress.com';
 
     /**
      * @var string
@@ -30,7 +31,7 @@ class YuntuPlatform extends Platform
     {
         $headers = [
             'Content-Type' => 'application/json; charset=utf8',
-            'Authorization' => ' basic ' . $this->buildToken(),
+            'Authorization' => 'Basic ' . $this->buildToken(),
             'Accept-Language' => 'en-us',
             'Accept' => 'text/json',
         ];
@@ -48,11 +49,11 @@ class YuntuPlatform extends Platform
     /**
      * @param string $countryCode
      * @return Transport[]|array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getTransportsByCountryCode(string $countryCode): array
     {
-        $api = '/lms/Get';
+        $api = '/api/Common/GetCountry';
         $query = [];
         if (!empty($countryCode)) {
             $query = [
@@ -67,10 +68,9 @@ class YuntuPlatform extends Platform
         foreach ($result as $value) {
             $_transport = clone $transport;
             $_transport->countryCode = $countryCode;
-            $_transport->code = $value['Code'];
-            $_transport->cnName = $value['FullName'];
-            $_transport->enName = $value['EnglishName'];
-            $_transport->ifTracking = $value['HaveTrackingNum'] ? 1 : 0;
+            $_transport->code = $value['CountryCode'];
+            $_transport->cnName = $value['CName'];
+            $_transport->enName = $value['EName'];
             $_transport->data = json_encode($value, JSON_UNESCAPED_UNICODE);
             $transports[] = $_transport;
         }
@@ -82,19 +82,19 @@ class YuntuPlatform extends Platform
      * @param Order $order
      * @return OrderResult
      * @throws ExpressException
-     * @throws \Exception
+     * @throws Exception
      */
     public function createOrder(Order $order): OrderResult
     {
         $orderResult = new OrderResult();
-        $api = '/WayBill/BatchAdd';
-        $waybill[] = $this->formatOrder($order);
-        $body = ['body' => json_encode($waybill)];
+        $api = '/api/WayBill/CreateOrder';
+        $waybill = $this->formatOrder($order);
+        $body = ['body' => json_encode([$waybill])];
 
         $response = $this->client->post($this->host . $api, $body);
         $result = $this->parseResult($response->getBody());
 
-        if (!empty($result) && $result[0]['Status']) {
+        if (!empty($result) && $result[0]['Success'] === 1) {
             $orderResult->expressAgentNumber = $result[0]['AgentNumber'];
             $orderResult->expressNumber = $result[0]['WayBillNumber'];
             $orderResult->expressTrackingNumber = $result[0]['TrackingNumber'];
@@ -111,22 +111,21 @@ class YuntuPlatform extends Platform
      * Get print url
      * @param string $orderNumber
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        $this->host = 'http://api.yunexpress.com/LMS.API.Lable/Api';
-        $api = '/PrintUrl';
+        $url = $this->host . "/api/Label/Print";
         $data = [$orderNumber];
         $body = ['body' => json_encode($data)];
 
-        $response = $this->client->post($this->host . $api, $body);
+        $response = $this->client->post($url, $body);
 
         $result = $this->parseResult($response->getBody());
 
         try {
             return $result[0]['Url'];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             throw new ExpressException('获取打印地址失败', (array)$result);
         }
     }
@@ -135,11 +134,11 @@ class YuntuPlatform extends Platform
      * Get platform order fee
      * @param string $orderNumber
      * @return OrderFee
-     * @throws \Exception
+     * @throws Exception
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        $api = '/WayBill/GetShippingFeeDetail';
+        $api = '/api/Freight/GetShippingFeeDetail';
         $query = [
             'query' => ['wayBillNumber' => $orderNumber],
         ];
@@ -151,7 +150,7 @@ class YuntuPlatform extends Platform
         $orderFee = new OrderFee();
         $orderFee->customerOrderNumber = $result['CustomerOrderNumber'];
         $orderFee->orderNumber = $result['WayBillNumber'];
-        $orderFee->chargeWeight = $result['ChargeWeight'];
+        $orderFee->chargeWeight = $result['GrossWeight'];
         $orderFee->freight = $result['Freight'];
         $orderFee->fuelCosts = $result['FuelSurcharge'];
         $orderFee->registrationFee = $result['RegistrationFee'];
@@ -182,61 +181,56 @@ class YuntuPlatform extends Platform
      */
     protected function formatOrder(Order $orderClass)
     {
-        $shipper = [];
         $goods = [];
-        if ($orderClass->shipper) {
-            $shipper = [
-                'CountryCode' => $orderClass->shipper->countryCode,
-                'SenderFirstName' => $orderClass->shipper->name,
-                'SenderAddress' => $orderClass->shipper->address,
-                'SenderCity' => $orderClass->shipper->city,
-                'SenderState' => $orderClass->shipper->state,
-                'SenderZip' => $orderClass->shipper->zip,
-                'SenderPhone' => $orderClass->shipper->phone,
-                'SenderCompany' => $orderClass->shipper->company,
-            ];
-        }
-
-        $recipient = [
-            'CountryCode' => $orderClass->recipient->countryCode,
-            'ShippingFirstName' => $orderClass->recipient->name,
-            'ShippingState' => $orderClass->recipient->state,
-            'ShippingCity' => $orderClass->recipient->city,
-            'ShippingAddress' => $orderClass->recipient->address,
-            'ShippingZip' => $orderClass->recipient->zip,
-            'ShippingPhone' => $orderClass->recipient->phone,
-            'ShippingCompany' => $orderClass->recipient->company,
-        ];
-
-
-        $package = [
-            'PackageNumber' => $orderClass->package->quantity,
-            'Weight' => $orderClass->package->weight,
-            'SourceCode' => 'API',
-        ];
 
         foreach ($orderClass->goods as $key => $value) {
             $goods[$key] = [
-                'ApplicationName' => $value->description,
-                'PickingName' => $value->cnDescription,
-                'Qty' => $value->quantity,
+                'EName' => $value->description,
+                'CName' => $value->cnDescription,
+                'Quantity' => $value->quantity,
                 'UnitPrice' => $value->worth,
                 'UnitWeight' => $value->weight,
                 'HSCode' => $value->hsCode,
                 'SKU' => $value->sku,
+                'CurrencyCode' => "USD"
             ];
         }
 
-        $order = [
-            'OrderNumber' => $orderClass->customerOrderNo,
-            'ShippingMethodCode' => $orderClass->transportCode,
-            'ApplicationInfos' => $goods,
-            'InsuranceType' => $orderClass->evaluate ? 1 : 0,
-            'InsureAmount' => $orderClass->evaluate,
-            'IsReturn' => $orderClass->isReturn,
-        ];
 
-        return array_merge($order, ['SenderInfo' => $shipper], ['ShippingInfo' => $recipient], $package);
+        return [
+            'CustomerOrderNumber' => $orderClass->customerOrderNo,
+            'ShippingMethodCode' => $orderClass->transportCode,
+            'PackageCount' => $orderClass->package->quantity,
+            'Weight' => $orderClass->package->weight,
+            'Receiver' => [
+                'CountryCode' => $orderClass->recipient->countryCode,
+                'FirstName' => $orderClass->recipient->name,
+                'LastName' => $orderClass->recipient->name,
+                'Company' => $orderClass->recipient->company,
+                'Street' => $orderClass->recipient->address,
+                'City' => $orderClass->recipient->city,
+                'State' => $orderClass->recipient->state,
+                'Zip' => $orderClass->recipient->zip,
+                'Phone' => $orderClass->recipient->phone,
+                'HouseNumber' => $orderClass->recipient->doorplate,
+                'Email' => $orderClass->recipient->email,
+            ],
+            'Sender' => [
+                'CountryCode' => $orderClass->shipper->countryCode,
+                'FirstName' => $orderClass->shipper->name,
+                'LastName' => $orderClass->shipper->name,
+                'Company' => $orderClass->shipper->company,
+                'Street' => $orderClass->shipper->address,
+                'City' => $orderClass->shipper->city,
+                'State' => $orderClass->shipper->state,
+                'Zip' => $orderClass->shipper->zip,
+                'Phone' => $orderClass->shipper->phone,
+            ],
+            'ReturnOption' => $orderClass->isReturn ? 1 : 0,
+            'InsuranceOption' => $orderClass->evaluate ? 1 : 0,
+            'Coverage' => $orderClass->evaluate,
+            'Parcels' => $goods,
+        ];
     }
 
 
@@ -254,23 +248,23 @@ class YuntuPlatform extends Platform
      *
      * @param string $result
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function parseResult($result)
+    protected function parseResult($result): array
     {
         $arr = json_decode($result, true);
-        if (empty($arr) || !isset($arr['ResultCode'])) {
-            throw new \Exception('Invalid response: ' . $result, 400);
+        if (empty($arr) || !isset($arr['Code'])) {
+            throw new Exception('Invalid response: ' . $result, 400);
         }
-        if (!in_array($arr['ResultCode'], ['0000', '5001'])) {
-            if (!is_numeric($arr['ResultCode'])) {
-                $arr['ResultCode'] = '1001';
+        if (!in_array($arr['Code'], ['0000', '5001'])) {
+            if (!is_numeric($arr['Code'])) {
+                $arr['Code'] = '1001';
             }
-            $message = $arr['ResultDesc'];
-            if (!empty($arr['Item'][0]['Feedback'])) {
-                $message = $arr['Item'][0]['Feedback'];
+            $message = sprintf("%s;%s;%s", $arr['Message'], $arr["RequestId"], $arr["TimeStamp"]);
+            if (!empty($arr['Item'][0]['Remark'])) {
+                $message = $arr['Item'][0]['Remark'];
             }
-            throw new ExpressException($message, $arr['ResultCode']);
+            throw new ExpressException($message, $arr['Code']);
         }
 
         return $arr['Item'];
