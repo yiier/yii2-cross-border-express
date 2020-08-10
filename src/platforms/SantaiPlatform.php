@@ -240,6 +240,7 @@ class SantaiPlatform extends Platform
                 'detailWorth' => $value->worth,
                 'detailWeight' => $value->weight,
                 'hsCode' => $value->hsCode,
+                'detailCustomLabel' => $value->hsCode,
                 'enMaterial' => $value->enMaterial,
                 'cnMaterial' => $value->cnMaterial,
             ];
