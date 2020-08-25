@@ -84,7 +84,6 @@ $config = [
             "host" => "http://api-sbx.wanbexpress.com",
             "account_no" => "",
             "token" => "",
-            "shipping_method" => "",
             "warehouse_code" => "",
             "oss_wan_domain" => "oss-cn-beijing.aliyuncs.com",
             "oss_lan_domain" => "oss-cn-beijing-internal.aliyuncs.com",
