@@ -31,7 +31,6 @@ class WanbPlatformTest extends \PHPUnit_Framework_TestCase
                 "host" => "http://api-sbx.wanbexpress.com",
                 "account_no" => "TEST",
                 "token" => "DK49AjVbKj23bdk",
-                "shipping_method" => "3HPA",
                 "warehouse_code" => "SZ"
             ]
         ]

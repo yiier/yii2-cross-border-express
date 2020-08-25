@@ -33,11 +33,6 @@ class WanbPlatform extends Platform
     private $host = '';
 
     /**
-     * @var string $shippingMethod
-     */
-    private $shippingMethod = "3HPA";
-
-    /**
      * @var string $warehouseCode
      */
     private $warehouseCode = "SZ";
@@ -57,7 +52,6 @@ class WanbPlatform extends Platform
             )
         ];
 
-        $this->shippingMethod = $this->config->get("shipping_method");
         $this->warehouseCode = $this->config->get("warehouse_code");
 
         $client = new \GuzzleHttp\Client([
@@ -321,7 +315,7 @@ class WanbPlatform extends Platform
             'WithBatteryType' => $orderClass->withBattery == 1 ? "WithBattery" : "NOBattery", // NOBattery,WithBattery,Battery
             'Notes' => $orderClass->package->description,
             'WarehouseCode' => $this->warehouseCode,
-            'ShippingMethod' => $this->shippingMethod,
+            'ShippingMethod' => $orderClass->transportCode,
             'ItemType' => 'SPX',
             'TradeType' => 'B2C',
             'IsMPS' => false,
