@@ -205,7 +205,7 @@ class YuntuPlatform extends Platform
             'Receiver' => [
                 'CountryCode' => $orderClass->recipient->countryCode,
                 'FirstName' => $orderClass->recipient->name,
-                'LastName' => $orderClass->recipient->name,
+//                'LastName' => $orderClass->recipient->name,
                 'Company' => $orderClass->recipient->company,
                 'Street' => $orderClass->recipient->address,
                 'City' => $orderClass->recipient->city,
@@ -218,7 +218,7 @@ class YuntuPlatform extends Platform
             'Sender' => [
                 'CountryCode' => $orderClass->shipper->countryCode,
                 'FirstName' => $orderClass->shipper->name,
-                'LastName' => $orderClass->shipper->name,
+//                'LastName' => $orderClass->shipper->name,
                 'Company' => $orderClass->shipper->company,
                 'Street' => $orderClass->shipper->address,
                 'City' => $orderClass->shipper->city,
