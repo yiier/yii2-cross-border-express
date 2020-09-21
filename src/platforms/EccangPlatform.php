@@ -44,8 +44,8 @@ class EccangPlatform extends Platform
      */
     public function getClient()
     {
-        $this->endpoint = $this->endpoint ?: $this->wsdl;
-        $client = new nusoap_client($this->endpoint, true);
+        $this->endpoint = $this->config->get("wsdl") ?: $this->wsdl;
+        $client = new nusoap_client($this->endpoint, false);
         $client->soap_defencoding = 'UTF-8';
         $client->decode_utf8 = false;
         $this->appKey = $this->config->get("appKey");
@@ -65,30 +65,30 @@ class EccangPlatform extends Platform
      * @param Order $order
      * @return OrderResult
      * @throws ExpressException
+     * @throws \SoapFault
      */
     public function createOrder(Order $order): OrderResult
     {
         $orderResult = new OrderResult();
-        $result = $this->client->call(
+        $req = $this->getRequestParams(
             'createOrder',
-            $this->getRequestParams('createOrder',
-                $this->formatOrder($order)
-            )
+            $this->formatOrder($order)
         );
+        var_dump($req);
+        $options = array(
+            "trace" => true,
+            "connection_timeout" => 1000,
+            "encoding" => "utf-8"
+        );
+        $client = new \SoapClient ($this->wsdl, $options);
+        $rs = $client->callService($req);
 
-        var_dump($result);
+        $result = $this->parseResponse($rs->response);
 
-        if (isset($result['orderActionStatus'])) {
-            if ($result['orderActionStatus'] == 'Y') {
-                $orderResult->expressTrackingNumber = $result['trackingNumber'];
-                $orderResult->expressAgentNumber = self::dataGet($result, 'trackingNumberUsps');
-                $orderResult->expressNumber = $result['orderCode'];
-            } else {
-                throw new ExpressException($result['note']);
-            }
-        } else {
-            throw new ExpressException('订单提交返回失败', (array)$result);
-        }
+        $orderResult->expressTrackingNumber = $result['shipping_method_no'];
+//        $orderResult->expressAgentNumber = self::dataGet($result, 'trackingNumberUsps');
+        $orderResult->expressNumber = $result['reference_no'];
+
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
         return $orderResult;
@@ -193,7 +193,22 @@ class EccangPlatform extends Platform
         ];
     }
 
-    protected function parseBody() {
+    /**
+     * @param string $resp
+     * @return array
+     * @throws ExpressException
+     */
+    protected function parseResponse(string $resp): array
+    {
+        $res = json_decode($resp, true);
+        if (!$res) {
+            throw new ExpressException("返回数据解析失败");
+        }
 
+        if (strtoupper($res["ask"]) != "SUCCESS") {
+            throw new ExpressException(sprintf("err: %s, code: %d", $res["message"], $res["err_code"]));
+        }
+
+        return $res;
     }
 }
