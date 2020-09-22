@@ -19,4 +19,5 @@ class PlatformsName
     const JIYOU_PLATFORM = "jiyou";
     const WANB_PLATFORM = "wanb";
     const COURIERBUTLER_PLATFORM = "courierbutler";
+    const ECCANG_PLATFORM = "eccang";
 }
