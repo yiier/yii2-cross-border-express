@@ -35,9 +35,18 @@ class EccangPlatform extends Platform
     private $appKey = "";
 
     /**
-     * @var string
+     * @var string $endpoint
      */
     protected $endpoint;
+
+    /**
+     * @var array $options
+     */
+    private $options = [
+        "trace" => true,
+        "connection_timeout" => 3000,
+        "encoding" => "utf-8"
+    ];
 
     /**
      * @inheritDoc
@@ -54,11 +63,34 @@ class EccangPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param string $countryCode
+     * @return array|void|Transport[]
+     * @throws ExpressException
+     * @throws \SoapFault
      */
     public function getTransportsByCountryCode(string $countryCode)
     {
-        // TODO: Implement getTransportsByCountryCode() method.
+        $req = $this->getRequestParams(
+            'getCountry', []
+        );
+        $client = new \SoapClient ($this->wsdl, $this->options);
+        $rs = $client->callService($req);
+
+        $transports = [];
+
+        $result = $this->parseResponse($rs->response);
+        foreach ($result["data"] as $value) {
+            if (strtoupper($value["CountryCode"]) != strtoupper($countryCode)) {
+                continue;
+            }
+            $t = new Transport();
+            $t->countryCode = $value["CountryCode"];
+            $t->cnName = $value["CName"];
+            $t->enName = $value["EName"];
+            $transports[] = $t;
+        }
+
+        return $transports;
     }
 
     /**
@@ -74,20 +106,16 @@ class EccangPlatform extends Platform
             'createOrder',
             $this->formatOrder($order)
         );
-        var_dump($req);
-        $options = array(
-            "trace" => true,
-            "connection_timeout" => 1000,
-            "encoding" => "utf-8"
-        );
-        $client = new \SoapClient ($this->wsdl, $options);
+
+        $client = new \SoapClient ($this->wsdl, $this->options);
         $rs = $client->callService($req);
 
         $result = $this->parseResponse($rs->response);
 
-        $orderResult->expressTrackingNumber = $result['shipping_method_no'];
-//        $orderResult->expressAgentNumber = self::dataGet($result, 'trackingNumberUsps');
-        $orderResult->expressNumber = $result['reference_no'];
+        $trackRes = $this->getTrackNumber($result["reference_no"]);
+        $orderResult->expressNumber = $trackRes["WayBillNumber"];
+        $orderResult->expressTrackingNumber = $trackRes["TrackingNumber"];
+        $orderResult->expressAgentNumber = $result["agent_number"];
 
         $orderResult->data = json_encode($result, JSON_UNESCAPED_UNICODE);
 
@@ -95,11 +123,25 @@ class EccangPlatform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @return string
+     * @throws ExpressException
+     * @throws \SoapFault
      */
     public function getPrintUrl(string $orderNumber): string
     {
-        // TODO: Implement getPrintUrl() method.
+        $req = $this->getRequestParams(
+            'getLabelUrl',
+            [
+                "reference_no" => $orderNumber,
+                "label_type" => "2",
+            ]
+        );
+        $client = new \SoapClient ($this->wsdl, $this->options);
+        $rs = $client->callService($req);
+
+        $result = $this->parseResponse($rs->response);
+        return $result["url"];
     }
 
     /**
@@ -107,7 +149,35 @@ class EccangPlatform extends Platform
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
-        // TODO: Implement getOrderFee() method.
+        $req = $this->getRequestParams(
+            'getReceivingExpense',
+            [
+                "reference_no" => $orderNumber,
+            ]
+        );
+        $client = new \SoapClient ($this->wsdl, $this->options);
+        $rs = $client->callService($req);
+
+        $result = $this->parseResponse($rs->response);
+        $response = new OrderFee();
+        $data = $result["data"];
+        if (empty($data)) {
+            return $response;
+        }
+
+        $response->country = $data["CountryCode"];
+        $response->totalFee = $data["TotalFee"];
+        $response->otherFee = $data["OtherFee"];
+        $response->processingFee = $data["HandlingFee"];
+        $response->registrationFee = $data["Register"];
+        $response->freight = $data["Freight"];
+        $response->chargeWeight = $data["SettleWeight"];
+        $response->fuelCosts = $data["FuelCharge"];
+        $response->customerOrderNumber = $data["CustomerOrderNumber"];
+        $response->orderNumber = $data["TrackingNumber"]; // WaybillNumber
+        $response->data = json_encode($data, JSON_UNESCAPED_UNICODE);
+
+        return $response;
     }
 
     /**
@@ -115,7 +185,7 @@ class EccangPlatform extends Platform
      */
     public function getOrderAllFee(array $query = []): array
     {
-        // TODO: Implement getOrderAllFee() method.
+        return [];
     }
 
     protected function formatOrder(Order $orderClass): array
@@ -179,6 +249,30 @@ class EccangPlatform extends Platform
     }
 
     /**
+     * @param string $referenceNo
+     * @return array
+     * @throws ExpressException
+     * @throws \SoapFault
+     */
+    private function getTrackNumber(string $referenceNo): array
+    {
+        $req = $this->getRequestParams(
+            'getLabelUrl',
+            [
+                "reference_no" => $referenceNo,
+            ]
+        );
+        $client = new \SoapClient ($this->wsdl, $this->options);
+        $rs = $client->callService($req);
+
+        $result = $this->parseResponse($rs->response);
+        if (count($result["data"]) < 1) {
+            return "";
+        }
+        return $result["data"][0];
+    }
+
+    /**
      * @param string $service
      * @param array $paramsJson
      * @return array
@@ -206,7 +300,11 @@ class EccangPlatform extends Platform
         }
 
         if (strtoupper($res["ask"]) != "SUCCESS") {
-            throw new ExpressException(sprintf("err: %s, code: %d", $res["message"], $res["err_code"]));
+            $msg = $res["message"];
+            if (!empty($res["Error"])) {
+                $msg .= sprintf(" err: %s, code: %s ", $res["Error"]["errMessage"], $res["Error"]["errCode"]);
+            }
+            throw new ExpressException(sprintf(" err: %s, code: %d ", $msg, $res["err_code"]));
         }
 
         return $res;
