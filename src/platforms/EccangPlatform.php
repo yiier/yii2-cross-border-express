@@ -48,7 +48,7 @@ class EccangPlatform extends Platform
     ];
 
     /**
-     * @return Client|nusoap_client
+     * @return Client
      */
     public function getClient()
     {
@@ -77,7 +77,7 @@ class EccangPlatform extends Platform
         $req = $this->getRequestParams(
             'getCountry', []
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -110,7 +110,7 @@ class EccangPlatform extends Platform
             $this->formatOrder($order)
         );
 
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -139,7 +139,7 @@ class EccangPlatform extends Platform
                 "label_type" => "2",
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
 
@@ -160,7 +160,7 @@ class EccangPlatform extends Platform
                 "reference_no" => $orderNumber,
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -265,16 +265,16 @@ class EccangPlatform extends Platform
     private function getTrackNumber(string $referenceNo): array
     {
         $req = $this->getRequestParams(
-            'getLabelUrl',
+            'getTrackNumber',
             [
-                "reference_no" => $referenceNo,
+                "reference_no" => [$referenceNo],
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
-        if (count($result["data"]) < 1) {
+        if (empty($result["data"])) {
             return [];
         }
         return $result["data"][0];
