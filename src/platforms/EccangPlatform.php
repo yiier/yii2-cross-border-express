@@ -5,7 +5,6 @@ namespace yiier\crossBorderExpress\platforms;
 
 
 use GuzzleHttp\Client;
-use nusoap_client;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
@@ -49,36 +48,41 @@ class EccangPlatform extends Platform
     ];
 
     /**
-     * @inheritDoc
+     * @return Client|nusoap_client
      */
     public function getClient()
     {
-        $this->endpoint = $this->config->get("wsdl") ?: $this->wsdl;
-        $client = new nusoap_client($this->endpoint, false);
-        $client->soap_defencoding = 'UTF-8';
-        $client->decode_utf8 = false;
+        $this->endpoint = $this->config->get("wsdl") ?: $this->webService;
         $this->appKey = $this->config->get("appKey");
         $this->appToken = $this->config->get("appToken");
-        return $client;
+//        return new \SoapClient($this->wsdl, $this->options);
+        $headers = [
+            'Content-Type' => 'application/xml; charset=utf8',
+            'Accept' => 'application/xml',
+        ];
+
+        return new \GuzzleHttp\Client([
+            'headers' => $headers,
+            'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
+        ]);
     }
 
     /**
      * @param string $countryCode
      * @return array|void|Transport[]
      * @throws ExpressException
-     * @throws \SoapFault
      */
     public function getTransportsByCountryCode(string $countryCode)
     {
         $req = $this->getRequestParams(
             'getCountry', []
         );
-        $client = new \SoapClient ($this->wsdl, $this->options);
-        $rs = $client->callService($req);
-
+        $rs = $this->client->post($this->webService, [
+            "body" => $req,
+        ]);
+        $result = $this->parseResponse($rs->getBody());
         $transports = [];
 
-        $result = $this->parseResponse($rs->response);
         foreach ($result["data"] as $value) {
             if (strtoupper($value["CountryCode"]) != strtoupper($countryCode)) {
                 continue;
@@ -97,7 +101,6 @@ class EccangPlatform extends Platform
      * @param Order $order
      * @return OrderResult
      * @throws ExpressException
-     * @throws \SoapFault
      */
     public function createOrder(Order $order): OrderResult
     {
@@ -107,10 +110,10 @@ class EccangPlatform extends Platform
             $this->formatOrder($order)
         );
 
-        $client = new \SoapClient ($this->wsdl, $this->options);
-        $rs = $client->callService($req);
-
-        $result = $this->parseResponse($rs->response);
+        $rs = $this->client->post($this->webService, [
+            "body" => $req,
+        ]);
+        $result = $this->parseResponse($rs->getBody());
 
         $trackRes = $this->getTrackNumber($result["reference_no"]);
         $orderResult->expressNumber = $trackRes["WayBillNumber"];
@@ -126,7 +129,6 @@ class EccangPlatform extends Platform
      * @param string $orderNumber
      * @return string
      * @throws ExpressException
-     * @throws \SoapFault
      */
     public function getPrintUrl(string $orderNumber): string
     {
@@ -137,15 +139,18 @@ class EccangPlatform extends Platform
                 "label_type" => "2",
             ]
         );
-        $client = new \SoapClient ($this->wsdl, $this->options);
-        $rs = $client->callService($req);
+        $rs = $this->client->post($this->webService, [
+            "body" => $req,
+        ]);
 
-        $result = $this->parseResponse($rs->response);
+        $result = $this->parseResponse($rs->getBody());
         return $result["url"];
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @return OrderFee
+     * @throws ExpressException
      */
     public function getOrderFee(string $orderNumber): OrderFee
     {
@@ -155,10 +160,10 @@ class EccangPlatform extends Platform
                 "reference_no" => $orderNumber,
             ]
         );
-        $client = new \SoapClient ($this->wsdl, $this->options);
-        $rs = $client->callService($req);
-
-        $result = $this->parseResponse($rs->response);
+        $rs = $this->client->post($this->webService, [
+            "body" => $req,
+        ]);
+        $result = $this->parseResponse($rs->getBody());
         $response = new OrderFee();
         $data = $result["data"];
         if (empty($data)) {
@@ -188,6 +193,10 @@ class EccangPlatform extends Platform
         return [];
     }
 
+    /**
+     * @param Order $orderClass
+     * @return array
+     */
     protected function formatOrder(Order $orderClass): array
     {
 
@@ -252,7 +261,6 @@ class EccangPlatform extends Platform
      * @param string $referenceNo
      * @return array
      * @throws ExpressException
-     * @throws \SoapFault
      */
     private function getTrackNumber(string $referenceNo): array
     {
@@ -262,12 +270,12 @@ class EccangPlatform extends Platform
                 "reference_no" => $referenceNo,
             ]
         );
-        $client = new \SoapClient ($this->wsdl, $this->options);
-        $rs = $client->callService($req);
-
-        $result = $this->parseResponse($rs->response);
+        $rs = $this->client->post($this->webService, [
+            "body" => $req,
+        ]);
+        $result = $this->parseResponse($rs->getBody());
         if (count($result["data"]) < 1) {
-            return "";
+            return [];
         }
         return $result["data"][0];
     }
@@ -275,16 +283,24 @@ class EccangPlatform extends Platform
     /**
      * @param string $service
      * @param array $paramsJson
-     * @return array
+     * @return string
      */
-    protected function getRequestParams(string $service, array $paramsJson): array
+    protected function getRequestParams(string $service, array $paramsJson): string
     {
-        return [
-            'service' => $service,
-            'paramsJson' => json_encode($paramsJson),
-            'appToken' => $this->appToken,
-            'appKey' => $this->appKey
-        ];
+        $template = <<<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www.example.org/Ec/">
+  <SOAP-ENV:Body>
+    <ns1:callService>
+      <paramsJson>%s</paramsJson>
+      <appToken>%s</appToken>
+      <appKey>%s</appKey>
+      <service>%s</service>
+    </ns1:callService>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+EOF;
+        return sprintf($template, json_encode($paramsJson), $this->appToken, $this->appKey, $service);
     }
 
     /**
@@ -294,7 +310,15 @@ class EccangPlatform extends Platform
      */
     protected function parseResponse(string $resp): array
     {
-        $res = json_decode($resp, true);
+        $p = xml_parser_create();
+        xml_parse_into_struct($p, $resp, $values, $tags);
+        xml_parser_free($p);
+
+        if (count($values) < 4) {
+            throw new ExpressException("XML解析出错");
+        }
+        $val = $values[3]["value"];
+        $res = json_decode($val, true);
         if (!$res) {
             throw new ExpressException("返回数据解析失败");
         }
