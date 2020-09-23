@@ -100,7 +100,7 @@ $config = [
         'eccang' => [
             "appKey" => "",
             "appToken" => "",
-            "wsdl" => ""
+            "host" => ""
         ]       
     ],
 ];

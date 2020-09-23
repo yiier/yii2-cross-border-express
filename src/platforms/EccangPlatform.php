@@ -52,7 +52,7 @@ class EccangPlatform extends Platform
      */
     public function getClient()
     {
-        $this->endpoint = $this->config->get("wsdl") ?: $this->webService;
+        $this->endpoint = $this->config->get("host") ?: $this->webService;
         $this->appKey = $this->config->get("appKey");
         $this->appToken = $this->config->get("appToken");
 //        return new \SoapClient($this->wsdl, $this->options);
@@ -245,7 +245,7 @@ class EccangPlatform extends Platform
             "shipping_method" => $orderClass->transportCode,
             "country_code" => $orderClass->shipper->countryCode,
             "order_weight" => $orderClass->package->weight,
-            "order_pieces" => $orderClass->package->declareWorth,
+            "order_pieces" => intval($orderClass->package->declareWorth),
             "is_return" => $orderClass->isReturn,
 //            "reference_id" => "461983",
 //            "shipment_id" => "1235646",
