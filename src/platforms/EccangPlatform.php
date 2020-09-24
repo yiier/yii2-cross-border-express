@@ -48,11 +48,11 @@ class EccangPlatform extends Platform
     ];
 
     /**
-     * @return Client|nusoap_client
+     * @return Client
      */
     public function getClient()
     {
-        $this->endpoint = $this->config->get("wsdl") ?: $this->webService;
+        $this->endpoint = $this->config->get("host") ?: $this->webService;
         $this->appKey = $this->config->get("appKey");
         $this->appToken = $this->config->get("appToken");
 //        return new \SoapClient($this->wsdl, $this->options);
@@ -77,7 +77,7 @@ class EccangPlatform extends Platform
         $req = $this->getRequestParams(
             'getCountry', []
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -110,7 +110,7 @@ class EccangPlatform extends Platform
             $this->formatOrder($order)
         );
 
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -139,7 +139,7 @@ class EccangPlatform extends Platform
                 "label_type" => "2",
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
 
@@ -160,7 +160,7 @@ class EccangPlatform extends Platform
                 "reference_no" => $orderNumber,
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
@@ -226,7 +226,7 @@ class EccangPlatform extends Platform
                 "invoice_cnname" => $good->cnDescription,
                 "invoice_enname" => $good->enMaterial,
                 "invoice_weight" => $good->weight,
-                "invoice_quantity" => $good->quantity,
+                "invoice_quantity" => $good->quantity < 1 ? 1 : intval($good->quantity),
                 "invoice_unitcharge" => $good->worth,
                 "hs_code" => $good->hsCode,
                 "sku" => $good->sku
@@ -245,7 +245,7 @@ class EccangPlatform extends Platform
             "shipping_method" => $orderClass->transportCode,
             "country_code" => $orderClass->shipper->countryCode,
             "order_weight" => $orderClass->package->weight,
-            "order_pieces" => $orderClass->package->declareWorth,
+            "order_pieces" => intval($orderClass->package->declareWorth),
             "is_return" => $orderClass->isReturn,
 //            "reference_id" => "461983",
 //            "shipment_id" => "1235646",
@@ -265,16 +265,16 @@ class EccangPlatform extends Platform
     private function getTrackNumber(string $referenceNo): array
     {
         $req = $this->getRequestParams(
-            'getLabelUrl',
+            'getTrackNumber',
             [
-                "reference_no" => $referenceNo,
+                "reference_no" => [$referenceNo],
             ]
         );
-        $rs = $this->client->post($this->webService, [
+        $rs = $this->client->post($this->endpoint, [
             "body" => $req,
         ]);
         $result = $this->parseResponse($rs->getBody());
-        if (count($result["data"]) < 1) {
+        if (empty($result["data"])) {
             return [];
         }
         return $result["data"][0];
