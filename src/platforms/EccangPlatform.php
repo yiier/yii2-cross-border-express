@@ -243,7 +243,7 @@ class EccangPlatform extends Platform
         return [
             "reference_no" => $orderClass->customerOrderNo,
             "shipping_method" => $orderClass->transportCode,
-            "country_code" => $orderClass->shipper->countryCode,
+            "country_code" => $orderClass->recipient->countryCode,
             "order_weight" => $orderClass->package->weight,
             "order_pieces" => intval($orderClass->package->declareWorth),
             "is_return" => $orderClass->isReturn,
