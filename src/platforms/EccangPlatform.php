@@ -328,7 +328,7 @@ EOF;
             if (!empty($res["Error"])) {
                 $msg .= sprintf(" err: %s, code: %s ", $res["Error"]["errMessage"], $res["Error"]["errCode"]);
             }
-            throw new ExpressException(sprintf(" err: %s, code: %d ", $msg, $res["err_code"]));
+            throw new ExpressException(sprintf(" err: %s, code: %d ", $msg, !empty($res["err_code"]) ? $res["err_code"] : 0));
         }
 
         return $res;
