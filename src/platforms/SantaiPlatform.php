@@ -249,7 +249,8 @@ class SantaiPlatform extends Platform
         $order = [
             'customerOrderNo' => $orderClass->customerOrderNo,
             // 发货地址类型，1 为用户系统默认地址，2 为用户传送的地址信息
-            'shipperAddressType' => $orderClass->shipper ? 2 : 1,
+//            'shipperAddressType' => $orderClass->shipper ? 2 : 1,
+            'shipperAddressType' => 1,
             'shippingMethod' => $orderClass->transportCode,
             'goodsDetails' => $goods,
             // 提交订单 confirmed，订单预提交状态 preprocess，提交且交寄订单 sumbmitted
