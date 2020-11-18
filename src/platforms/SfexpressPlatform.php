@@ -43,6 +43,16 @@ class SfexpressPlatform extends Platform
      */
     public function getClient()
     {
+        //$config = [
+        //    "timeout" => 60.0,
+        //    "platforms" => [
+        //        \yiier\crossBorderExpress\platforms\PlatformsName::SFEXPRESS_PLATFORM => [
+        //            "accesscode" => "KT7551249912",
+        //            "username" => "erptest",
+        //            "checkword" => "78BE1BCAAED1EE08D344F894FBB296D3",
+        //        ]
+        //    ]
+        //];
 
         $this->endpoint = $this->endpoint ?: self::ENDPOINT;
         $client = new nusoap_client($this->endpoint, true);
