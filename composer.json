@@ -22,7 +22,8 @@
         "econea/nusoap": "^0.9.6",
         "ext-json": "*",
         "yiier/yii2-aliyun-oss": "*",
-      "ext-xml": "*"
+      "ext-xml": "*",
+      "ext-libxml": "*"
     },
     "autoload": {
         "psr-4": {

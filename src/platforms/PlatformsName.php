@@ -20,4 +20,5 @@ class PlatformsName
     const WANB_PLATFORM = "wanb";
     const COURIERBUTLER_PLATFORM = "courierbutler";
     const ECCANG_PLATFORM = "eccang";
+    const SFEXPRESS_PLATFORM = "sfexpress";
 }
