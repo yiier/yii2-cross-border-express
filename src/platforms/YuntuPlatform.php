@@ -110,10 +110,11 @@ class YuntuPlatform extends Platform
     /**
      * Get print url
      * @param string $orderNumber
+     * @param array $params
      * @return string
-     * @throws Exception
+     * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $url = $this->host . "/api/Label/Print";
         $data = [$orderNumber];

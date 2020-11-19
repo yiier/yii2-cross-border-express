@@ -47,10 +47,11 @@ interface PlatformInterface
     /**
      * Get platform print url
      * @param string $orderNumber
+     * @param array $params
      * @return string
      * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string;
+    public function getPrintUrl(string $orderNumber, array $params = []): string;
 
     /**
      * Get platform order fee
