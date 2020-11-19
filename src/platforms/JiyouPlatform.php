@@ -169,7 +169,7 @@ class JiyouPlatform extends Platform
     /**
      * @inheritDoc
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
 //        $orderKey = "trackingNo"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）
         $orderKey = "oid"; // 跟踪单号（trackingNo）,订单编号（orderId）,客户单号（orderNo）

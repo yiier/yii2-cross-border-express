@@ -110,7 +110,7 @@ class EtowerPlatform extends Platform
      * @return string
      * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $uri = "/services/shipper/labels";
 

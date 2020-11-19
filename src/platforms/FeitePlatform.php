@@ -103,7 +103,7 @@ class FeitePlatform extends Platform
      * @return string
      * @throws \Exception
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $api = 'http://exapi.flytcloud.com/api/label/LabelProvider/GetLabelBatchExt';
         $data = [
