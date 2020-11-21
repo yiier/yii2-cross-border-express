@@ -164,7 +164,7 @@ class SfexpressPlatform extends Platform
             if ($res["success"]) {
                 return $res["url"];
             }
-            throw new ExpressException($result);
+            throw new ExpressException($result->getBody());
         } catch (\Exception $e) {
             throw new ExpressException($e->getMessage());
         }
