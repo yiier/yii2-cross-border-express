@@ -14,7 +14,7 @@ use yiier\crossBorderExpress\contracts\PlatformInterface;
 /**
  * Class Express
  * @method createOrder(Order $order): OrderResult
- * @method getPrintUrl(string $orderNumber): string
+ * @method getPrintUrl(string $orderNumber, array $params = []): string
  * @method getTransportsByCountryCode(string $countryCode): array
  * @method getOrderFee(string $trackingNumber): OrderFee
  * @method getOrderAllFee(array $query = []): OrderFee[]

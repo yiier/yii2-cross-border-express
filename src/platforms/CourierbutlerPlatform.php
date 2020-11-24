@@ -71,7 +71,7 @@ class CourierbutlerPlatform extends Platform
      * @return string
      * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $this->body["serviceMethod"] = "getnewlabel";
         $this->body["paramsJson"] = json_encode([

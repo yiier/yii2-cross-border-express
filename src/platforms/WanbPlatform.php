@@ -94,7 +94,7 @@ class WanbPlatform extends Platform
      * @inheritDoc
      * @throws \OSS\Core\OssException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         return $this->getPrintFile($orderNumber);
     }

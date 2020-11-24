@@ -24,7 +24,14 @@ class SfexpressPlatform extends Platform
     protected $accesscode = '';             //商户号码
     protected $checkword = '';             //商户密匙
 
-    const ENDPOINT = "http://sfapi.trackmeeasy.com/ruserver/webservice/sfexpressService?wsdl";
+    const ENDPOINT = "http://kts-api-uat.trackmeeasy.com/ruserver/webservice/sfexpressService?wsdl";
+    const PRINT_URL = "http://kts-api-uat.trackmeeasy.com/ruserver/api/getLabelUrl.action";
+
+
+    /**
+     * @var Client
+     */
+    private $httpClient;
 
     /**
      * @var array $xmlArray
@@ -43,17 +50,6 @@ class SfexpressPlatform extends Platform
      */
     public function getClient()
     {
-        //$config = [
-        //    "timeout" => 60.0,
-        //    "platforms" => [
-        //        \yiier\crossBorderExpress\platforms\PlatformsName::SFEXPRESS_PLATFORM => [
-        //            "accesscode" => "KT7551249912",
-        //            "username" => "erptest",
-        //            "checkword" => "78BE1BCAAED1EE08D344F894FBB296D3",
-        //        ]
-        //    ]
-        //];
-
         $this->endpoint = $this->endpoint ?: self::ENDPOINT;
         $client = new nusoap_client($this->endpoint, true);
         $client->soap_defencoding = 'UTF-8';
@@ -64,6 +60,10 @@ class SfexpressPlatform extends Platform
         $this->xmlArray["@attributes"]["service"] = "OrderService";
         $this->xmlArray['Head'] = $this->config->get("username");
         $this->endpoint = $this->config->get('host') ?: self::ENDPOINT;
+
+        $this->httpClient = new \GuzzleHttp\Client([
+            'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
+        ]);
 
         return $client;
     }
@@ -127,27 +127,48 @@ class SfexpressPlatform extends Platform
                     $success = 'OK' == strtoupper($node['head']);
                     break;
                 case 'body':
-                    $ret['data'] = $node[strtolower($name)] ?? '';
+                    $body = $node[strtolower($name)] ?? '';
                     break;
                 case 'error':
                     $error = sprintf("code: %s; msg: %s", $node["code"], $node["error"]);
                     break;
             }
         }
-        if(!$success){
+        if (!$success) {
             throw new ExpressException($error);
         }
         return $body;
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @param array $params
+     * @return string
+     * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
-        // TODO: Implement getPrintUrl() method.
-        // https://github.com/duugr/express/blob/ebff856b658aae75cc681f9d425ab2dadba487ea/src/Sf.php
-        // https://github.com/171869092/live/blob/c148b41cea36bc81217a494e23100fee873d105f/laravel/app/Service/ShunFeng/ExpressWebService.php
+        $request = [
+            "orderid" => $params["orderNo"],
+            'mailno' => $orderNumber,
+            'onepdf' => 'true', //是否打印一张pdf
+            'jianhuodan' => "false",
+            'username' => $this->config->get("username"),
+        ];
+        $request["signature"] = $this->sign($this->config->get("username"));
+        $request = http_build_query($request);
+        $url = self::PRINT_URL . '?' . $request;
+        try {
+            $result = $this->httpClient->get($url);
+            $res = json_decode($result->getBody(), true);
+            if ($res["success"]) {
+                return $res["url"];
+            }
+            throw new ExpressException($result->getBody());
+        } catch (\Exception $e) {
+            throw new ExpressException($e->getMessage());
+        }
+
     }
 
     /**
@@ -204,7 +225,7 @@ class SfexpressPlatform extends Platform
             "Order" => [
                 "orderid" => $order->customerOrderNo,
                 "platform_order_id" => $order->customerOrderNo,
-                "platform_code" => "ICOLO",
+                "platform_code" => $this->config->get("platform_code"),
                 "erp_code" => "0000",
                 "express_type" => $order->transportCode,
                 "j_company" => $order->shipper->company,
@@ -237,12 +258,6 @@ class SfexpressPlatform extends Platform
             ],
             "Cargo" => $cargo
         ];
-    }
-
-    public static function toObj($xml, $notObj = true)
-    {
-        $obj = simplexml_load_string($xml, "SimpleXMLElement", LIBXML_NOCDATA);
-        return json_decode(json_encode($obj), $notObj);
     }
 
     /**

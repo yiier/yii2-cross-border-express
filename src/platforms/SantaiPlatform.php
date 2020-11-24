@@ -97,7 +97,7 @@ class SantaiPlatform extends Platform
      * @param string $orderNumber
      * @return string
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $host = 'http://www.sendfromchina.com/api/label';
         $printType = 1;

@@ -10,6 +10,7 @@ Cross Border Express for Yii2
 - 万邦物流
 - 速递管家
 - 易仓物流
+- 顺丰国际物流
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -101,6 +102,12 @@ $config = [
             "appKey" => "",
             "appToken" => "",
             "host" => ""
+        ],
+        'sfexpress' => [
+            "accesscode" => "",
+            "username" => "",
+            "checkword" => "",
+            "platform_code" => "",
         ]       
     ],
 ];
@@ -217,3 +224,4 @@ $express->getOrderFee($orderNumber);
 - [万邦接口文档](http://apidoc.wanbexpress.com/)
 - [速递管家接口文档](http://lfn.rtb56.com/usercenter/manager/api_document.aspx)
 - [易仓物流](http://ec.wiki.eccang.com/docs/show/2547)
+- [顺丰国际物流](http://docs.uat.trackmeeasy.com/api/)

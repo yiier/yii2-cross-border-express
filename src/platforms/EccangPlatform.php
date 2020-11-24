@@ -130,7 +130,7 @@ class EccangPlatform extends Platform
      * @return string
      * @throws ExpressException
      */
-    public function getPrintUrl(string $orderNumber): string
+    public function getPrintUrl(string $orderNumber, array $params = []): string
     {
         $req = $this->getRequestParams(
             'getLabelUrl',
