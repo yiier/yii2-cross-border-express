@@ -24,8 +24,8 @@ class SfexpressPlatform extends Platform
     protected $accesscode = '';             //商户号码
     protected $checkword = '';             //商户密匙
 
-    const ENDPOINT = "http://kts-api-uat.trackmeeasy.com/ruserver/webservice/sfexpressService?wsdl";
-    const PRINT_URL = "http://kts-api-uat.trackmeeasy.com/ruserver/api/getLabelUrl.action";
+    const ENDPOINT = "http://sfapi.trackmeeasy.com/ruserver/webservice/sfexpressService?wsdl";
+    const PRINT_URL = "http://sfapi.trackmeeasy.com/ruserver/api/getLabelUrl.action";
 
 
     /**
