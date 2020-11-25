@@ -99,9 +99,9 @@ class SfexpressPlatform extends Platform
         $parameter = ['xml' => $xml, 'verifyCode' => $this->sign($xml)];
         $result = $this->client->call('sfKtsService', $parameter);
         $res = $this->parseXml($result, "OrderResponse");
-        $orderResult->expressTrackingNumber = $res["mailno"];
+        $orderResult->expressTrackingNumber = $res["direction_code"];
         $orderResult->expressAgentNumber = $res["agent_mailno"];
-        $orderResult->expressNumber = $res["direction_code"];
+        $orderResult->expressNumber = $res["mailno"];
         $orderResult->data = json_encode($res, JSON_UNESCAPED_UNICODE);
 
         return $orderResult;
@@ -235,6 +235,9 @@ class SfexpressPlatform extends Platform
                 "j_province" => $order->shipper->state,
                 "j_city" => $order->shipper->city,
                 "j_address" => $order->shipper->address,
+                "j_country" => $order->shipper->countryCode,
+                "j_county" => $order->shipper->city,
+                "j_post_code" => $order->shipper->zip,
                 "d_company" => $order->recipient->company,
                 "d_contact" => $order->recipient->name,
                 "d_tel" => $order->recipient->phone,
@@ -246,11 +249,8 @@ class SfexpressPlatform extends Platform
                 "pay_method" => "1",
                 "declared_value" => $order->package->quantity ?: 1 * $order->package->declareWorth,
                 "declared_value_currency" => "USD",
-                "j_country" => $order->shipper->countryCode,
-                "j_county" => $order->shipper->address,
-                "j_post_code" => $order->shipper->zip,
                 "d_country" => $order->recipient->countryCode,
-                "d_county" => $order->recipient->address,
+                "d_county" => $order->recipient->city,
                 "d_post_code" => $order->recipient->zip,
                 "cargo_total_weight" => $order->package->weight,
                 "operate_flag" => "1",
