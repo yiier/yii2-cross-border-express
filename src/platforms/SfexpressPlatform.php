@@ -100,7 +100,7 @@ class SfexpressPlatform extends Platform
         $result = $this->client->call('sfKtsService', $parameter);
         $res = $this->parseXml($result, "OrderResponse");
         $orderResult->expressTrackingNumber = $res["direction_code"];
-        $orderResult->expressAgentNumber = $res["agent_mailno"];
+        $orderResult->expressAgentNumber = !empty($res["agent_mailno"]) ? $res["agent_mailno"] : "";
         $orderResult->expressNumber = $res["mailno"];
         $orderResult->data = json_encode($res, JSON_UNESCAPED_UNICODE);
 
