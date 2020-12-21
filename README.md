@@ -11,6 +11,7 @@ Cross Border Express for Yii2
 - 速递管家
 - 易仓物流
 - 顺丰国际物流
+- K5物流系统
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -108,7 +109,12 @@ $config = [
             "username" => "",
             "checkword" => "",
             "platform_code" => "",
-        ]       
+        ], 
+		'k5' => [
+            "host" => "",
+            "clientid" => "",
+            "token" => "",
+        ],  
     ],
 ];
 
