@@ -12,7 +12,7 @@ namespace platforms;
 
 
 require_once("../../vendor/autoload.php");
-require_once("D:/phpstudy_pro/WWW/ft-erp/vendor/yiier/yii2-cross-border-express/tests/PHPUnit_Framework_TestCase.php");
+require_once("../PHPUnit_Framework_TestCase.php");
 use yiier\crossBorderExpress\test;
 use yiier\crossBorderExpress\contracts\Goods;
 use yiier\crossBorderExpress\contracts\Order;
@@ -31,9 +31,9 @@ class K5PlatformTest extends \PHPUnit_Framework_TestCase
         "timeout" => 60.0,
         "platforms" => [
             \yiier\crossBorderExpress\platforms\PlatformsName::K5_PLATFORM => [
-                "host" => "http://cje56.kingtrans.net",
-                "clientid" => "KLXX",
-                "token" => "9868p7SfORYS4d1wFm9L",
+                "host" => "http://xt.jiehang.net",
+                "clientid" => "KLXX008",
+                "token" => "IPLLEx18PbUSd8Fygejo",
                 //"warehouse_code" => "SZ"
             ]
         ]
@@ -62,6 +62,7 @@ class K5PlatformTest extends \PHPUnit_Framework_TestCase
     {
         $express = new Express($this->config, PlatformsName::K5_PLATFORM);
         try {
+			//var_dump($express->searchStartChannel());exit;
             $orderResult = $express->createOrder($this->getExpressOrder());
 
              var_dump($orderResult->expressNumber);
