@@ -21,5 +21,5 @@ class PlatformsName
     const COURIERBUTLER_PLATFORM = "courierbutler";
     const ECCANG_PLATFORM = "eccang";
     const SFEXPRESS_PLATFORM = "sfexpress";
-	const SFEXPRESS_PLATFORM = "k5";
+    const K5_PLATFORM = "k5";
 }
