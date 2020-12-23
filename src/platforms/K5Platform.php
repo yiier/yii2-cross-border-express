@@ -268,9 +268,9 @@ class K5Platform extends Platform
             $volumes[] = [
                 'Weight'=> $good->weight, // 实重
                 'Number'=>$good->quantity, //  件数
-                'Length'=>$good->length, //  长
-                'Width'=>$good->width, // 宽
-                'Height'=> $good->height, // 高
+                //'Length'=>$good->length, //  长
+                //'Width'=>$good->width, // 宽
+                //'Height'=> $good->height, // 高
                 
             ];
             
@@ -302,7 +302,7 @@ class K5Platform extends Platform
                     'Addres'=>$orderClass->shipper->address, // 电话
                     'Country'=> $orderClass->shipper->countryCode, // 国家
                     'Mobile'=> $orderClass->shipper->phone, // 电话
-                    'Tel'=> $orderClass->shipper->Tel, // 电话
+                    'Tel'=> $orderClass->shipper->phone, // 电话
                     'Province'=>$orderClass->shipper->state, // 省州
                     'City'=>$orderClass->shipper->city, // 城市
                     'Post'=>$orderClass->shipper->zip, // 邮编
