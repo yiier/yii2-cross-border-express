@@ -35,6 +35,37 @@ class CourierbutlerPlatform extends Platform
         return $client;
     }
 
+
+    /**
+     * @param string $refrence_no 客户参考号
+     * @return string
+     * @throws ExpressException
+     */
+    public function getTracingNumber(string $refrence_no): string
+    {
+
+
+        $this->body["serviceMethod"] = "gettrackingnumber";
+        $this->body["paramsJson"] = json_encode([
+            'reference_no'=>$refrence_no
+        ], true);
+        try {
+            $result = $this->client->post($this->host . "/webservice/PublicService.asmx/ServiceInterfaceUTF8", [
+                'form_params' => $this->body,
+            ])->getBody();
+            $data = $this->parseResult($result);
+            //var_dump($data);exit;
+            return $data['shipping_method_no']?$data['shipping_method_no']:'';
+        } catch (ExpressException $exception) {
+            throw new ExpressException(sprintf("获取转单号失败: %s", $exception->getMessage()));
+        }
+
+        return "";
+    }
+
+
+
+
     /**
      * @param string $countryCode
      * @return array|Transport[]
@@ -59,7 +90,8 @@ class CourierbutlerPlatform extends Platform
             $orderResult = new OrderResult();
             $orderResult->data = json_encode($resData, true);
             $orderResult->expressNumber = !empty($resData["refrence_no"]) ? $resData["refrence_no"] : "";
-            $orderResult->expressTrackingNumber = !empty($resData["shipping_method_no"]) ? $resData["shipping_method_no"] : "";
+            $orderResult->expressTrackingNumber = !empty($resData["shipping_method_no"]) ? $resData["shipping_method_no"] : "";;
+            $orderResult->expressAgentNumber = !empty($resData["shipping_method_no"]) ? $resData["shipping_method_no"] : "";
             return $orderResult;
         } catch (ExpressException $exception) {
             throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
@@ -129,7 +161,10 @@ class CourierbutlerPlatform extends Platform
     protected function parseResult(string $result)
     {
         $res = json_decode($result, true);
-        if ($res["success"] == 1) {
+        if(!is_array($res)) {
+            throw new ExpressException('接口返回数据异常');
+        }
+        if (isset($res["success"]) && $res["success"] == 1) {
             return $res["data"];
         } else {
             throw new ExpressException($res["cnmessage"]);
