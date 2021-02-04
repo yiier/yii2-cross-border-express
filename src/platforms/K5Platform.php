@@ -255,23 +255,14 @@ class K5Platform extends Platform
     {
         
         $items = [];
-        $volumes = [];
         foreach ($orderClass->goods as $good) {
             $items[] = [
-                'Sku'=>$good->sku, // 产品 Sku (OrderType 为仓储订单必传)
+                'Sku'=>is_null($good->sku)?'':$good->sku, // 产品 Sku (OrderType 为仓储订单必传)
                 'Cnname'=>$good->cnDescription, //  产品中文名
                 'Enname'=>$good->description, // 产品英文名
                 'Price'=>$good->worth, // 单价
                 'SingleWeight'=>$good->weight, // 单件重量
                 'Num'=>$good->quantity, // 数量
-            ];
-            $volumes[] = [
-                'Weight'=> $good->weight, // 实重
-                'Number'=>$good->quantity, //  件数
-                //'Length'=>$good->length, //  长
-                //'Width'=>$good->width, // 宽
-                //'Height'=> $good->height, // 高
-                
             ];
             
         }
@@ -287,10 +278,10 @@ class K5Platform extends Platform
                 'TotalValue'=>$orderClass->package->declareWorth, // 订单总申报价值
                 'Number'=>$orderClass->package->quantity, // 件数
                 'Recipient'=>[
-                    'Name'=>$orderClass->recipient->name, // 名称
-                    'Company'=>$orderClass->recipient->company,
-                    'Addres1'=>$orderClass->recipient->address, // 电话
-                    'Addres2'=> $orderClass->recipient->doorplate, // 电话
+                    'Name'=>is_null($orderClass->recipient->name)?'':$orderClass->recipient->name, // 名称
+                    'Company'=>is_null($orderClass->recipient->company)?'':$orderClass->recipient->company,
+                    'Addres1'=>is_null($orderClass->recipient->address)?'':$orderClass->recipient->address, // 地址1
+                    'Addres2'=>is_null($orderClass->recipient->doorplate)?'':$orderClass->recipient->doorplate, // 地址2
                     'Tel'=> $orderClass->recipient->phone, // 电话
                     'Province'=>$orderClass->recipient->state, // 省州
                     'City'=>$orderClass->recipient->city, // 城市
@@ -298,8 +289,8 @@ class K5Platform extends Platform
                 ],
                 'Sender'=>[
                     'Name'=>$orderClass->shipper->name, // 名称
-                    'Company'=>$orderClass->shipper->company,
-                    'Addres'=>$orderClass->shipper->address, // 电话
+                    'Company'=>is_null($orderClass->shipper->company)?'':$orderClass->shipper->company,
+                    'Addres'=>is_null($orderClass->shipper->address)?'':$orderClass->shipper->address, // 地址
                     'Country'=> $orderClass->shipper->countryCode, // 国家
                     'Mobile'=> $orderClass->shipper->phone, // 电话
                     'Tel'=> $orderClass->shipper->phone, // 电话
@@ -310,8 +301,6 @@ class K5Platform extends Platform
                
                 'OrderItems'=>$items, // 订单明细产品信息
     
-                'Volumes'=>$volumes, // 材积明细 (OrderType 为快递制单必传)   
-
                 'FeePayData'=>[
                     'FeePayType'=>$this->FeePayType, // 支付方式[ PP:预付,CC:到付, TP:第三方]必传
                 ],
