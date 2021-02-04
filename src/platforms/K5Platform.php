@@ -115,7 +115,8 @@ class K5Platform extends Platform
      */
     public function getPrintUrl(string $orderNumber, array $params = []): string
     {
-        return $this->getPrintFile($orderNumber);
+        
+        return $this->getPrintFile($orderNumber,$params['channelCode']);
     }
 
     /**
@@ -123,17 +124,23 @@ class K5Platform extends Platform
      * @return string
      * @throws \OSS\Core\OssException
      */
-    protected function getPrintFile(string $orderNumber): string
+    protected function getPrintFile(string $orderNumber,$channelCode): string
     {
+
+        $PrintPaper = $this->searchPrintPaper($channelCode);
+
 
         $params = [
             'OrderType'=>$this->OrderType,
             'Verify'=>$this->getVerifyData(),
-            'CorpBillidDatas'=>[['CorpBillid'=>$orderNumber]]
+            'CorpBillidDatas'=>[['CorpBillid'=>$orderNumber]],
+            'OrderType'=>$this->OrderType,
+            'PrintPaper'=>$PrintPaper,
+            'PrintContent'=>1
         ];
         
         try {
-            $result = $this->client->post($this->host . "/PostInterfaceService?method=printOrderInvoice", [
+            $result = $this->client->post($this->host . "/PostInterfaceService?method=printOrderLabel", [
                 'body' => json_encode($params, true)
             ])->getBody();
             $orderInvoice = json_decode($result,true);
@@ -170,6 +177,40 @@ class K5Platform extends Platform
     }
 
     /**
+     * 查询渠道纸张代码
+     *
+     * @param [type] $channelCode
+     * @return void
+     */
+    public function searchPrintPaper($channelCode)
+    {
+        if(!$channelCode){
+            throw new ExpressException("打印面单失败: 渠道码错误-".$channelCode);  
+        }
+        $params = [
+            'Verify'=>$this->getVerifyData(),
+            'ChannelCode'=>$channelCode
+        ];
+        
+        try {
+            $result = $this->client->post($this->host . "/PostInterfaceService?method=searchPrintPaper", [
+                'body' => json_encode($params, true)
+            ])->getBody();
+            $PrintPaper = json_decode($result,true);
+            if($PrintPaper['statusCode'] === 'success') {
+                return $PrintPaper['returnDatas'][0]['paperCode'];
+            }else{
+                throw new ExpressException(sprintf("打印面单失败: %s", $PrintPaper['message']));
+            }
+            //echo '<pre>';var_dump($PrintPaper);exit;
+        } catch (ExpressException $exception) {
+            throw new ExpressException(sprintf("打印面单失败: %s", $exception->getMessage()));
+        }
+
+        return "";
+    }
+
+    /**
      * 验证信息
      *
      * @return array
@@ -193,8 +234,8 @@ class K5Platform extends Platform
         $resData = $this->parseExpress($result);
         $orderResult = new OrderResult();
         $orderResult->data = $result;
-        $orderResult->expressAgentNumber = !empty($resData["corpBillid"]) ? $resData["corpBillid"] : "";
-        $orderResult->expressNumber = !empty($resData["customerNumber"]) ? $resData["customerNumber"] : "";
+        $orderResult->expressAgentNumber = !empty($resData["customerNumber"]) ? $resData["customerNumber"] : "";
+        $orderResult->expressNumber = !empty($resData["corpBillid"]) ? $resData["corpBillid"] : "";
         $orderResult->expressTrackingNumber = !empty($resData["trackNumber"]) ? $resData["trackNumber"] : $this->getTracingNumber($resData["corpBillid"]);
         return $orderResult;
     }
@@ -264,7 +305,6 @@ class K5Platform extends Platform
                 'SingleWeight'=>$good->weight, // 单件重量
                 'Num'=>$good->quantity, // 数量
             ];
-            
         }
 
         return [
@@ -330,7 +370,7 @@ class K5Platform extends Platform
              $result = $this->client->post($this->host . "/PostInterfaceService?method=searchStartChannel", [
                  'body' => json_encode(['Verify' => $this->getVerifyData()], true)
              ])->getBody();
-             return $this->parseResult($result);
+             return json_decode($result,true);
          } catch (ExpressException $exception) {
              throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
          }
