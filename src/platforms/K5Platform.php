@@ -97,7 +97,6 @@ class K5Platform extends Platform
     {
 
         $parameter = $this->formatOrder($order);
-
         try {
             $result = $this->client->post($this->host . "/PostInterfaceService?method=createOrder", [
                 'body' => json_encode($parameter, true)
@@ -326,6 +325,7 @@ class K5Platform extends Platform
                     'Province'=>$orderClass->recipient->state, // 省州
                     'City'=>$orderClass->recipient->city, // 城市
                     'Post'=>$orderClass->recipient->zip, // 邮编
+                    'Email'=>$orderClass->recipient->email
                 ],
                 'Sender'=>[
                     'Name'=>$orderClass->shipper->name, // 名称
@@ -337,6 +337,7 @@ class K5Platform extends Platform
                     'Province'=>$orderClass->shipper->state, // 省州
                     'City'=>$orderClass->shipper->city, // 城市
                     'Post'=>$orderClass->shipper->zip, // 邮编
+                    'Email'=>$orderClass->shipper->email
                 ],
                
                 'OrderItems'=>$items, // 订单明细产品信息
