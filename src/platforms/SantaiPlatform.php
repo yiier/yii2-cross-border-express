@@ -255,7 +255,7 @@ class SantaiPlatform extends Platform
             'goodsDetails' => $goods,
             // 提交订单 confirmed，订单预提交状态 preprocess，提交且交寄订单 sumbmitted
             'orderStatus' => 'sumbmitted',
-            'evaluate' => $orderClass->evaluate,
+//            'evaluate' => $orderClass->evaluate,
             'taxesNumber' => $orderClass->taxesNumber,
             'isRemoteConfirm' => $orderClass->isRemoteConfirm,
             'isReturn' => $orderClass->isReturn,
