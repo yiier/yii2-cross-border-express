@@ -119,6 +119,12 @@ class FeitePlatform extends Platform
         $response = $this->client->post($api, $body);
 
         $result = json_decode($response->getBody(), true);
+        
+        // 返回unauthorized_client 错误的时候一般是因为token过期导致 所以强行清除一下
+        if($result['Status'] === 0 && $result['ErrCode'] === 'unauthorized_client') {
+            $cache = \Yii::$app->cache;
+            $cache->delete(self::CACHE_KEY_FEITE_ACCESS_TOKEN);
+        }
 
         try {
             $b64 = $result['Data']['Label'];
