@@ -12,7 +12,9 @@ namespace yiier\crossBorderExpress\platforms;
 
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use SimpleXMLElement;
+use yiier\AliyunOSS\OSS;
 use yiier\crossBorderExpress\contracts\Order;
 use yiier\crossBorderExpress\contracts\OrderFee;
 use yiier\crossBorderExpress\contracts\OrderResult;
@@ -34,29 +36,27 @@ class Yw56Platform extends Platform
     /**
      * @var string 端点
      */
-    private $endpoint = "http://online.yw56.com.cn/service";
+    private $endpoint = "http://online.yw56.com.cn";
 
     /**
-     * @inheritDoc
+     * @return Client|\nusoap_client
      */
     public function getClient()
     {
-        $headers = [
-            'Content-Type' => 'text/xml; charset=utf8',
-            'Authorization' => 'Basic ' . $this->token,
-            'Accept' => 'application/xml',
-        ];
-
-        $client = new \GuzzleHttp\Client([
-            'headers' => $headers,
-            'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
-        ]);
-
         $this->endpoint = $this->config->get('host') ?: $this->endpoint;
         $this->token = $this->config->get('token') ?: $this->token;
         $this->userId = $this->config->get('userId') ?: $this->userId;
 
-        return $client;
+        $headers = [
+            'Content-Type' => 'text/xml',
+            'Authorization' => 'Basic ' . $this->token,
+            'Accept' => 'application/xml',
+        ];
+
+        return new \GuzzleHttp\Client([
+            'headers' => $headers,
+            'timeout' => method_exists($this, 'getTimeout') ? $this->getTimeout() : 5.0,
+        ]);
     }
 
     /**
@@ -68,7 +68,9 @@ class Yw56Platform extends Platform
     }
 
     /**
-     * @inheritDoc
+     * @param Order $order
+     * @return OrderResult
+     * @throws ExpressException
      */
     public function createOrder(Order $order): OrderResult
     {
@@ -102,7 +104,7 @@ class Yw56Platform extends Platform
                 "Userid" => $this->userId,
                 "NameCh" => $order->goods[0]->cnDescription,
                 "NameEn" => $order->goods[0]->description,
-                "Weight" => $order->goods[0]->weight,
+                "Weight" => $order->goods[0]->weight * 1000,
                 "DeclaredValue" => $order->goods[0]->worth,
                 "DeclaredCurrency" => "USD",
                 "HsCode" => $order->goods[0]->hsCode
@@ -110,24 +112,45 @@ class Yw56Platform extends Platform
         ];
         $xml = new SimpleXMLElement('<ExpressType/>');
         $this->arrayToXml($data, $xml);
-        $response = $this->getClient()->post(sprintf("%s/service/users/%d/expresses", $this->endpoint, $this->userId), [
+
+        $response = $this->client->post(sprintf("%s/service/users/%d/expresses", $this->endpoint, $this->userId), [
             "body" => $xml->asXML()
         ]);
-        print_r($response->getHeaders());
-        $result = $response->getBody();
-        print_r($result);die;
-        return $this->parseResult();
+
+        return $this->parseResult($response->getBody());
     }
 
     /**
-     * @inheritDoc
+     * @param string $orderNumber
+     * @param array $params
+     * @return string
+     * @throws ExpressException
+     * @throws \OSS\Core\OssException
      */
     public function getPrintUrl(string $orderNumber, array $params = []): string
     {
-        // {SERVICEENDPOINT}/USERS/{USERID}/EXPRESSES/{EPCODE}/{LABELSIZE}LABEL
-        $response = $this->getClient()->get(sprintf("%s/service/users/%d/expresses/%s/%sLABEL", $this->endpoint, $this->userId, $orderNumber, "A4L"));
-        print_r($response->getHeaders());
-        $result = $response->getBody();
+        $cli = new \GuzzleHttp\Client([
+            'headers' => ["Authorization" => "Basic " . $this->token],
+        ]);
+
+        try {
+            $fileName = sprintf("%s.pdf", $orderNumber);
+            $filePath = "./" . $fileName;
+
+            $cli->get(sprintf("%s/service/users/%d/expresses/%s/%sLABEL",
+                $this->endpoint, $this->userId, $orderNumber, "A4L"), [
+                "save_to" => $filePath
+            ]);
+
+            return $this->getPrintFile($fileName, $filePath);
+        } catch (ClientException $exception) {
+            if ($exception->hasResponse() && !empty($exception->getResponse()->getBody())) {
+                if ($msg = $this->parseResponseError($exception->getResponse()->getBody())) {
+                    throw new ExpressException($msg);
+                }
+            }
+            throw new ExpressException($exception->getMessage());
+        }
     }
 
     /**
@@ -153,11 +176,29 @@ class Yw56Platform extends Platform
      */
     protected function parseResult(string $result): OrderResult
     {
+        $xml = new SimpleXMLElement($result);
+        if ($xml->CallSuccess == "false") {
+            throw new ExpressException(sprintf("%s:%s", $xml->Response->ReasonMessage, $xml->Response->Reason));
+        }
         $orderResult = new OrderResult();
-//        $orderResult->data = $result;
-//        $orderResult->expressNumber = !empty($resData["ProcessCode"]) ? $resData["ProcessCode"] : "";
-//        $orderResult->expressTrackingNumber = !empty($resData["TrackingNumber"]) ? $resData["TrackingNumber"] : $this->getTracingNumber($resData["ProcessCode"]);
+        $orderResult->data = json_decode($xml, TRUE);
+
+        $orderResult->expressNumber = !empty($xml->CreatedExpress->Epcode) ? $xml->CreatedExpress->Epcode : "";
+//        $orderResult->expressTrackingNumber = !empty($xml->CreatedExpress->YanwenNumber) ? $xml->CreatedExpress->YanwenNumber : "";
         return $orderResult;
+    }
+
+    /**
+     * @param string $result
+     * @return string
+     */
+    private function parseResponseError(string $result): string
+    {
+        $xml = new SimpleXMLElement($result);
+        if (!empty($xml->ReasonMessage)) {
+            return $xml->ReasonMessage;
+        }
+        return "";
     }
 
     /**
@@ -178,5 +219,40 @@ class Yw56Platform extends Platform
                 $xml->addChild($key, $value);
             }
         }
+    }
+
+    /**
+     * @param string $fileName
+     * @param string $filePath
+     * @return string
+     * @throws \OSS\Core\OssException
+     */
+    protected function getPrintFile(string $fileName, string $filePath): string
+    {
+        // PDF传到阿里云oss
+        $oss = new OSS([
+            "accessKeyId" => $this->config->get("ossAccessKeyId"),
+            "bucket" => $this->config->get("ossBucket"),
+            "accessKeySecret" => $this->config->get("ossAccessKeySecret"),
+            "lanDomain" => $this->config->get("ossLanDomain"),
+            "wanDomain" => $this->config->get("ossWanDomain"),
+            "isInternal" => false,
+        ]);
+
+        $storagePath = 'storage/express/yw56/';
+        if ($oss->has($storagePath . $fileName)) {
+            return sprintf("http://%s.%s/%s", $this->config->get("oss_bucket"), $this->config->get("oss_yw_domain"), $storagePath . $fileName);
+        }
+
+        if (!$oss->has($storagePath)) {
+            $oss->createDir($storagePath);
+        }
+
+        if ($res = $oss->upload($storagePath . $fileName, $filePath)) {
+            unlink($filePath);
+            return sprintf("http://%s/%s", $res["oss-requestheaders"]["Host"], $storagePath . $fileName);
+        }
+        unlink($filePath);
+        return "";
     }
 }
