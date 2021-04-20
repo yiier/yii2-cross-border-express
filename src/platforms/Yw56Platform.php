@@ -135,7 +135,7 @@ class Yw56Platform extends Platform
 
         try {
             $fileName = sprintf("%s.pdf", $orderNumber);
-            $filePath = "./" . $fileName;
+            $filePath = "/tmp/" . $fileName;
 
             $cli->get(sprintf("%s/service/users/%d/expresses/%s/%sLABEL",
                 $this->endpoint, $this->userId, $orderNumber, "A4L"), [
