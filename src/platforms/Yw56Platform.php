@@ -138,7 +138,7 @@ class Yw56Platform extends Platform
             $filePath = "/tmp/" . $fileName;
 
             $cli->get(sprintf("%s/service/users/%d/expresses/%s/%sLABEL",
-                $this->endpoint, $this->userId, $orderNumber, "A4L"), [
+                $this->endpoint, $this->userId, $orderNumber, "A6L"), [
                 "save_to" => $filePath
             ]);
 
