@@ -23,4 +23,5 @@ class PlatformsName
     const SFEXPRESS_PLATFORM = "sfexpress";
     const K5_PLATFORM = "k5";
     const YW56_PLATFORM = "yw56";
+    const HULIANTONG_PLATFORM = "huliantong";
 }
