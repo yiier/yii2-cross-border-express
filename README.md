@@ -12,6 +12,8 @@ Cross Border Express for Yii2
 - 易仓物流
 - 顺丰国际物流
 - K5物流系统
+- 燕文物流
+- 互联通物流
 
 [![Latest Stable Version](https://poser.pugx.org/yiier/yii2-cross-border-express/v/stable)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
 [![Total Downloads](https://poser.pugx.org/yiier/yii2-cross-border-express/downloads)](https://packagist.org/packages/yiier/yii2-cross-border-express) 
@@ -114,7 +116,21 @@ $config = [
             "host" => "",
             "clientid" => "",
             "token" => "",
-        ],  
+        ],
+        'yw56' => [
+            "host" => '',
+            "userId" => '',
+            "token" => '',
+            "ossBucket" => '',
+            "ossAccessKeyId" => '',
+            "ossAccessKeySecret" => '',
+            "ossLanDomain" => "oss-accelerate-internal.aliyuncs.com",
+            "ossWanDomain" => "oss-accelerate.aliyuncs.com",
+        ],
+        'huiliantong' => [
+            'host' => "",
+            'userToken' => ''
+        ]
     ],
 ];
 
@@ -231,3 +247,4 @@ $express->getOrderFee($orderNumber);
 - [速递管家接口文档](http://lfn.rtb56.com/usercenter/manager/api_document.aspx)
 - [易仓物流](http://ec.wiki.eccang.com/docs/show/2547)
 - [顺丰国际物流](http://docs.uat.trackmeeasy.com/api/)
+- [互联通物流系统](http://8.129.12.42:8086/xms/download/api/HLT-XMS-API.docx)
