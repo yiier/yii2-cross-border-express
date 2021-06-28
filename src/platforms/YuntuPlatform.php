@@ -231,6 +231,7 @@ class YuntuPlatform extends Platform
             'InsuranceOption' => $orderClass->evaluate ? 1 : 0,
             'Coverage' => $orderClass->evaluate,
             'Parcels' => $goods,
+            'IossCode' => $orderClass->taxesNumber
         ];
     }
 
