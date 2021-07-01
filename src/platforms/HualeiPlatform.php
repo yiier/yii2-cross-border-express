@@ -190,7 +190,7 @@ class HualeiPlatform extends Platform
             "consignee_companyname" => $orderClass->recipient->company,
             "order_cargoamount" => $orderClass->package->declareWorth,
             "order_insurance" => $orderClass->evaluate,
-            "consignee_taxno" => $orderClass->taxesNumber,
+//            "consignee_taxno" => $orderClass->taxesNumber,
             "consignee_doorno" => "",
             "shipper_name" => $orderClass->shipper->name,
             "shipper_companyname" => $orderClass->shipper->company,
@@ -200,6 +200,8 @@ class HualeiPlatform extends Platform
             "shipper_postcode" => $orderClass->shipper->zip,
             "shipper_country" => $orderClass->shipper->countryCode,
             "shipper_telephone" => $orderClass->shipper->phone,
+            "shipper_taxnotype" => "IOSS",
+            "shipper_taxno" => $orderClass->taxesNumber
         ];
     }
 

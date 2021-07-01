@@ -1,7 +1,7 @@
 <?php
 /**
- * 
- * User: andy 
+ *
+ * User: andy
  * Email: uuus007@gmail.com
  * Date: 2020/12/17
  * Time: 00:02
@@ -37,16 +37,17 @@ class K5Platform extends Platform
      * @var int
      */
     private $OrderType = '1';
-    
 
-     /**
-      * 支付方式 [ PP:预付,CC:到付, TP:第三方 ]
-      * @var string
-      */
+
+    /**
+     * 支付方式 [ PP:预付,CC:到付, TP:第三方 ]
+     * @var string
+     */
     private $FeePayType = 'PP';
-    
+
     /**
      * @inheritDoc
+     * @throws ExpressException
      */
     public function getClient()
     {
@@ -95,7 +96,6 @@ class K5Platform extends Platform
      */
     public function createOrder(Order $order): OrderResult
     {
-
         $parameter = $this->formatOrder($order);
         try {
             $result = $this->client->post($this->host . "/PostInterfaceService?method=createOrder", [
@@ -114,47 +114,43 @@ class K5Platform extends Platform
      */
     public function getPrintUrl(string $orderNumber, array $params = []): string
     {
-        
-        return $this->getPrintFile($orderNumber,$params['channelCode']);
+
+        return $this->getPrintFile($orderNumber, $params['channelCode']);
     }
 
     /**
      * @param string $orderNumber
      * @return string
      * @throws \OSS\Core\OssException
+     * @throws ExpressException
      */
-    protected function getPrintFile(string $orderNumber,$channelCode): string
+    protected function getPrintFile(string $orderNumber, $channelCode): string
     {
 
         $PrintPaper = $this->searchPrintPaper($channelCode);
 
-
         $params = [
-            'OrderType'=>$this->OrderType,
-            'Verify'=>$this->getVerifyData(),
-            'CorpBillidDatas'=>[['CorpBillid'=>$orderNumber]],
-            'OrderType'=>$this->OrderType,
-            'PrintPaper'=>$PrintPaper,
-            'PrintContent'=>1
+            'OrderType' => $this->OrderType,
+            'Verify' => $this->getVerifyData(),
+            'CorpBillidDatas' => [['CorpBillid' => $orderNumber]],
+            'PrintPaper' => $PrintPaper,
+            'PrintContent' => 1
         ];
-        
+
         try {
             $result = $this->client->post($this->host . "/PostInterfaceService?method=printOrderLabel", [
                 'body' => json_encode($params, true)
             ])->getBody();
-            $orderInvoice = json_decode($result,true);
+            $orderInvoice = json_decode($result, true);
 
-            if($orderInvoice['statusCode'] === 'success') {
+            if ($orderInvoice['statusCode'] === 'success') {
                 return $orderInvoice['url'];
-            }else{
+            } else {
                 throw new ExpressException(sprintf("创建包裹失败: %s", $orderInvoice['message']));
             }
         } catch (ExpressException $exception) {
             throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
         }
-
-        
-        return "";
     }
 
 
@@ -179,26 +175,27 @@ class K5Platform extends Platform
      * 查询渠道纸张代码
      *
      * @param [type] $channelCode
-     * @return void
+     * @return string
+     * @throws ExpressException
      */
-    public function searchPrintPaper($channelCode)
+    public function searchPrintPaper($channelCode): string
     {
-        if(!$channelCode){
-            throw new ExpressException("打印面单失败: 渠道码错误-".$channelCode);  
+        if (!$channelCode) {
+            throw new ExpressException("打印面单失败: 渠道码错误-" . $channelCode);
         }
         $params = [
-            'Verify'=>$this->getVerifyData(),
-            'ChannelCode'=>$channelCode
+            'Verify' => $this->getVerifyData(),
+            'ChannelCode' => $channelCode
         ];
-        
+
         try {
             $result = $this->client->post($this->host . "/PostInterfaceService?method=searchPrintPaper", [
                 'body' => json_encode($params, true)
             ])->getBody();
-            $PrintPaper = json_decode($result,true);
-            if($PrintPaper['statusCode'] === 'success') {
+            $PrintPaper = json_decode($result, true);
+            if ($PrintPaper['statusCode'] === 'success') {
                 return $PrintPaper['returnDatas'][0]['paperCode'];
-            }else{
+            } else {
                 throw new ExpressException(sprintf("打印面单失败: %s", $PrintPaper['message']));
             }
             //echo '<pre>';var_dump($PrintPaper);exit;
@@ -217,8 +214,8 @@ class K5Platform extends Platform
     private function getVerifyData(): array
     {
         return [
-            'Clientid'=>$this->config->get("clientid"),
-            'Token'=>$this->config->get("token"),
+            'Clientid' => $this->config->get("clientid"),
+            'Token' => $this->config->get("token"),
         ];
 
     }
@@ -248,17 +245,17 @@ class K5Platform extends Platform
     {
 
         $params = [
-            'OrderType'=>$this->OrderType,
-            'Verify'=>$this->getVerifyData(),
-            'CorpBillidDatas'=>[['CorpBillid'=>$processCode]]
+            'OrderType' => $this->OrderType,
+            'Verify' => $this->getVerifyData(),
+            'CorpBillidDatas' => [['CorpBillid' => $processCode]]
         ];
-        
+
         try {
             $result = $this->client->post($this->host . "/PostInterfaceService?method=searchOrderTracknumber", [
                 'body' => json_encode($params, true)
             ])->getBody();
-            $orderTrackNumber = json_decode($result,true);
-            return $orderTrackNumber[0]['trackNumber']?$orderTrackNumber[0]['trackNumber']:'';
+            $orderTrackNumber = json_decode($result, true);
+            return $orderTrackNumber[0]['trackNumber'] ? $orderTrackNumber[0]['trackNumber'] : '';
         } catch (ExpressException $exception) {
             throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
         }
@@ -277,11 +274,11 @@ class K5Platform extends Platform
         if (empty($arr) || !isset($arr['statusCode']) || $arr["statusCode"] !== 'success') {
             throw new ExpressException('Invalid response: ' . $result, 400);
         }
-        
+
         if (isset($arr["returnDatas"][0]['statusCode']) && $arr["returnDatas"][0]['statusCode'] === 'error') {
             throw new ExpressException($arr["returnDatas"][0]['message']);
         }
-       
+
         return isset($arr["returnDatas"][0]) ? $arr["returnDatas"][0] : [];
     }
 
@@ -293,87 +290,83 @@ class K5Platform extends Platform
      */
     protected function formatOrder(Order $orderClass): array
     {
-        
+
         $items = [];
         foreach ($orderClass->goods as $good) {
             $items[] = [
-                'Sku'=>is_null($good->sku)?'':$good->sku, // 产品 Sku (OrderType 为仓储订单必传)
-                'Cnname'=>$good->cnDescription, //  产品中文名
-                'Enname'=>$good->description, // 产品英文名
-                'Price'=>$good->worth, // 单价
-                'SingleWeight'=>$good->weight, // 单件重量
-                'Num'=>$good->quantity, // 数量
+                'Sku' => is_null($good->sku) ? '' : $good->sku, // 产品 Sku (OrderType 为仓储订单必传)
+                'Cnname' => $good->cnDescription, //  产品中文名
+                'Enname' => $good->description, // 产品英文名
+                'Price' => $good->worth, // 单价
+                'SingleWeight' => $good->weight, // 单件重量
+                'Num' => $good->quantity, // 数量
             ];
         }
 
         return [
             'Verify' => $this->getVerifyData(),
-            'OrderType'=>$this->OrderType,
-            'OrderDatas'=>[[
-                'CustomerNumber'=>$orderClass->customerOrderNo, // 客户订单号(可传入贵公司内部单号)
-                'ChannelCode'=>$orderClass->transportCode, // 渠道代码可调用[searchStartChannel]方法获取
-                'CountryCode'=>$orderClass->recipient->countryCode, // 国家二字代码
-                'TotalWeight'=>$orderClass->package->weight, // 订单总重量
-                'TotalValue'=>$orderClass->package->declareWorth, // 订单总申报价值
-                'Number'=>$orderClass->package->quantity, // 件数
-                'Recipient'=>[
-                    'Name'=>is_null($orderClass->recipient->name)?'':$orderClass->recipient->name, // 名称
-                    'Company'=>is_null($orderClass->recipient->company)?'':$orderClass->recipient->company,
-                    'Addres1'=>is_null($orderClass->recipient->address)?'':$orderClass->recipient->address, // 地址1
-                    'Addres2'=>is_null($orderClass->recipient->doorplate)?'':$orderClass->recipient->doorplate, // 地址2
-                    'Tel'=> $orderClass->recipient->phone, // 电话
-                    'Province'=>$orderClass->recipient->state, // 省州
-                    'City'=>$orderClass->recipient->city, // 城市
-                    'Post'=>$orderClass->recipient->zip, // 邮编
-                    'Email'=>$orderClass->recipient->email
+            'OrderType' => $this->OrderType,
+            'OrderDatas' => [[
+                'CustomerNumber' => $orderClass->customerOrderNo, // 客户订单号(可传入贵公司内部单号)
+                'ChannelCode' => $orderClass->transportCode, // 渠道代码可调用[searchStartChannel]方法获取
+                'CountryCode' => $orderClass->recipient->countryCode, // 国家二字代码
+                'TotalWeight' => $orderClass->package->weight, // 订单总重量
+                'TotalValue' => $orderClass->package->declareWorth, // 订单总申报价值
+                'Number' => $orderClass->package->quantity, // 件数
+                'Recipient' => [
+                    'Name' => is_null($orderClass->recipient->name) ? '' : $orderClass->recipient->name, // 名称
+                    'Company' => is_null($orderClass->recipient->company) ? '' : $orderClass->recipient->company,
+                    'Addres1' => is_null($orderClass->recipient->address) ? '' : $orderClass->recipient->address, // 地址1
+                    'Addres2' => is_null($orderClass->recipient->doorplate) ? '' : $orderClass->recipient->doorplate, // 地址2
+                    'Tel' => $orderClass->recipient->phone, // 电话
+                    'Province' => $orderClass->recipient->state, // 省州
+                    'City' => $orderClass->recipient->city, // 城市
+                    'Post' => $orderClass->recipient->zip, // 邮编
+                    'Email' => $orderClass->recipient->email,
+                    'Contaxno' => $orderClass->taxesNumber
                 ],
-                'Sender'=>[
-                    'Name'=>$orderClass->shipper->name, // 名称
-                    'Company'=>is_null($orderClass->shipper->company)?'':$orderClass->shipper->company,
-                    'Addres'=>is_null($orderClass->shipper->address)?'':$orderClass->shipper->address, // 地址
-                    'Country'=> $orderClass->shipper->countryCode, // 国家
-                    'Mobile'=> $orderClass->shipper->phone, // 电话
-                    'Tel'=> $orderClass->shipper->phone, // 电话
-                    'Province'=>$orderClass->shipper->state, // 省州
-                    'City'=>$orderClass->shipper->city, // 城市
-                    'Post'=>$orderClass->shipper->zip, // 邮编
-                    'Email'=>$orderClass->shipper->email
+                'Sender' => [
+                    'Name' => $orderClass->shipper->name, // 名称
+                    'Company' => is_null($orderClass->shipper->company) ? '' : $orderClass->shipper->company,
+                    'Addres' => is_null($orderClass->shipper->address) ? '' : $orderClass->shipper->address, // 地址
+                    'Country' => $orderClass->shipper->countryCode, // 国家
+                    'Mobile' => $orderClass->shipper->phone, // 电话
+                    'Tel' => $orderClass->shipper->phone, // 电话
+                    'Province' => $orderClass->shipper->state, // 省州
+                    'City' => $orderClass->shipper->city, // 城市
+                    'Post' => $orderClass->shipper->zip, // 邮编
+                    'Email' => $orderClass->shipper->email
                 ],
-               
-                'OrderItems'=>$items, // 订单明细产品信息
-    
-                'FeePayData'=>[
-                    'FeePayType'=>$this->FeePayType, // 支付方式[ PP:预付,CC:到付, TP:第三方]必传
+
+                'OrderItems' => $items, // 订单明细产品信息
+
+                'FeePayData' => [
+                    'FeePayType' => $this->FeePayType, // 支付方式[ PP:预付,CC:到付, TP:第三方]必传
                 ],
-                
-    
+
+                'TariffType' => "1300",
+
             ]],
-            
-            
 
 
-            
-
-        
-          
         ];
     }
 
     /**
      * 获取启用得入仓渠道
-     * 
-     * 
+     *
+     *
      */
     public function searchStartChannel()
     {
-        
-         try {
-             $result = $this->client->post($this->host . "/PostInterfaceService?method=searchStartChannel", [
-                 'body' => json_encode(['Verify' => $this->getVerifyData()], true)
-             ])->getBody();
-             return json_decode($result,true);
-         } catch (ExpressException $exception) {
-             throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
-         }
+
+        try {
+            $result = $this->client->post($this->host . "/PostInterfaceService?method=searchStartChannel", [
+                'body' => json_encode(['Verify' => $this->getVerifyData()], true)
+            ])->getBody();
+            return json_decode($result, true);
+        } catch (ExpressException $exception) {
+            throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
+        }
     }
 }

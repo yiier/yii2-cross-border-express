@@ -255,6 +255,7 @@ class SfexpressPlatform extends Platform
                 "cargo_total_weight" => $order->package->weight,
                 "operate_flag" => "1",
                 "isBat" => $order->withBattery,
+                "tax_number" => $order->taxesNumber
             ],
             "Cargo" => $cargo
         ];
