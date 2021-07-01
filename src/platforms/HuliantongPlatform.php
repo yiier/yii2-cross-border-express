@@ -251,7 +251,8 @@ class HuliantongPlatform extends Platform
             'insured' => $orderClass->evaluate > 0 ? "Y" : 'N',
             'goodsCategory' => 'O',
             'goodsDescription' => $orderClass->package->description,
-            'declareItems' => $declareItems
+            'declareItems' => $declareItems,
+            'shipperTaxNo' => $orderClass->taxesNumber
         ];
     }
 }
