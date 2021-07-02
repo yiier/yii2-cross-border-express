@@ -81,4 +81,10 @@ class Order
      * @var integer
      */
     public $pieceNumber;
+
+    /**
+     * 三态新增字段 公用字段(KREXP/KREXPSEA韩国专线用于传个人识别编号或出生年月日；JPEXP日本专线用于传店铺名)
+     * @var string
+     */
+    public $common;
 }
