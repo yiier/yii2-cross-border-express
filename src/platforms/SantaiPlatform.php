@@ -260,7 +260,8 @@ class SantaiPlatform extends Platform
             'isRemoteConfirm' => $orderClass->isRemoteConfirm,
             'isReturn' => $orderClass->isReturn,
             'withBattery' => $orderClass->withBattery,
-            'iossNo' => $orderClass->taxesNumber
+            'iossNo' => $orderClass->taxesNumber,
+            'common' => $orderClass->common
         ];
 
         $specialTransportCodes = [

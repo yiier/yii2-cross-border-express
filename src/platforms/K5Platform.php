@@ -323,7 +323,7 @@ class K5Platform extends Platform
                     'City' => $orderClass->recipient->city, // 城市
                     'Post' => $orderClass->recipient->zip, // 邮编
                     'Email' => $orderClass->recipient->email,
-                    'Contaxno' => $orderClass->taxesNumber
+//                    'Contaxno' => $orderClass->taxesNumber
                 ],
                 'Sender' => [
                     'Name' => $orderClass->shipper->name, // 名称
@@ -344,8 +344,9 @@ class K5Platform extends Platform
                     'FeePayType' => $this->FeePayType, // 支付方式[ PP:预付,CC:到付, TP:第三方]必传
                 ],
 
-                'TariffType' => "1300",
-
+//                'TariffType' => "1300",
+                'TariffType' => "",
+                'VatNumber' => $orderClass->taxesNumber
             ]],
 
 
