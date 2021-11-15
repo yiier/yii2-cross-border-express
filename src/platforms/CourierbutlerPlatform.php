@@ -84,10 +84,10 @@ class CourierbutlerPlatform extends Platform
             $resData = $this->parseResult($result);
             $orderResult = new OrderResult();
             $orderResult->data = json_encode($resData, true);
-//            $orderResult->expressNumber = !empty($resData["refrence_no"]) ? $resData["refrence_no"] : "";
+            $orderResult->expressNumber = !empty($resData["refrence_no"]) ? $resData["refrence_no"] : "";
             $orderResult->expressTrackingNumber = !empty($resData["shipping_method_no"]) ? $resData["shipping_method_no"] : "";;
             $orderResult->expressAgentNumber = !empty($resData["shipping_method_no"]) ? $resData["shipping_method_no"] : "";
-            $orderResult->expressNumber = $this->getTracingNumber($resData["refrence_no"]);
+//            $orderResult->expressNumber = $this->getTracingNumber($resData["refrence_no"]);
             return $orderResult;
         } catch (ExpressException $exception) {
             throw new ExpressException(sprintf("创建包裹失败: %s", $exception->getMessage()));
@@ -194,6 +194,7 @@ class CourierbutlerPlatform extends Platform
             'shipping_method' => $orderClass->transportCode,
             'order_weight' => $orderClass->package->weight,
             'order_pieces' => $orderClass->package->quantity,
+            'IossNum' => $orderClass->taxesNumber,
             'cargotype' => "W",
             'mail_cargo_type' => '2',
             'order_info' => $orderClass->package->description,
