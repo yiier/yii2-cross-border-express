@@ -120,8 +120,8 @@ class K5Platform extends Platform
 
     /**
      * @param string $orderNumber
+     * @param $channelCode
      * @return string
-     * @throws \OSS\Core\OssException
      * @throws ExpressException
      */
     protected function getPrintFile(string $orderNumber, $channelCode): string

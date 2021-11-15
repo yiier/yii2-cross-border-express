@@ -189,7 +189,7 @@ class HualeiPlatform extends Platform
             "consignee_email" => $orderClass->recipient->email,
             "consignee_companyname" => $orderClass->recipient->company,
             "order_cargoamount" => $orderClass->package->declareWorth,
-            "order_insurance" => $orderClass->evaluate,
+//            "order_insurance" => $orderClass->evaluate,
 //            "consignee_taxno" => $orderClass->taxesNumber,
             "consignee_doorno" => "",
             "shipper_name" => $orderClass->shipper->name,
