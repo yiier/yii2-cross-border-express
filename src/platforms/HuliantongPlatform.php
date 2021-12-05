@@ -244,6 +244,7 @@ class HuliantongPlatform extends Platform
             'street' => $orderClass->recipient->address,
             'city' => $orderClass->recipient->city,
             'province' => $orderClass->recipient->state,
+            'remail' => $orderClass->recipient->email,
             'consigneePostcode' => $orderClass->recipient->zip,
             'consigneeTelephone' => $orderClass->recipient->phone,
             'consigneeMobile' => $orderClass->recipient->phone,
