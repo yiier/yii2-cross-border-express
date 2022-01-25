@@ -93,8 +93,7 @@ class Yw56Platform extends Platform
                 "State" => $order->recipient->state,
                 "City" => $order->recipient->city,
                 "Address1" => $order->recipient->address,
-                "Address2" => $order->recipient->doorplate,
-                "NationalId" => $order->taxesNumber
+                "Address2" => $order->recipient->doorplate
             ],
             "Sender" => [
                 "TaxNumber" => $order->taxesNumber
