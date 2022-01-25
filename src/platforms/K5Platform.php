@@ -300,6 +300,7 @@ class K5Platform extends Platform
                 'Price' => $good->worth, // 单价
                 'SingleWeight' => $good->weight, // 单件重量
                 'Num' => $good->quantity, // 数量
+                'CustomsCode' => $good->hsCode
             ];
         }
 
