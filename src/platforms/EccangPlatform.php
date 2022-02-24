@@ -254,6 +254,7 @@ class EccangPlatform extends Platform
             "Shipper" => $shipper,
             "ItemArr" => $itemArr,
             "Volume" => $volume,
+            "ioss" => $orderClass->taxesNumber
         ];
     }
 

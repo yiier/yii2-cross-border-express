@@ -194,7 +194,7 @@ class CourierbutlerPlatform extends Platform
             'shipping_method' => $orderClass->transportCode,
             'order_weight' => $orderClass->package->weight,
             'order_pieces' => $orderClass->package->quantity,
-            'IossNum' => $orderClass->taxesNumber,
+            'ioss' => $orderClass->taxesNumber,
             'cargotype' => "W",
             'mail_cargo_type' => '2',
             'order_info' => $orderClass->package->description,
