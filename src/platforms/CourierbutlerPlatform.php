@@ -225,9 +225,13 @@ class CourierbutlerPlatform extends Platform
                 "consignee_telephone" => $orderClass->recipient->phone,
                 "consignee_mobile" => $orderClass->recipient->phone,
                 "consignee_email" => $orderClass->recipient->email,
-                "consignee_tariff" => $orderClass->taxesNumber,
+//                "consignee_tariff" => $orderClass->taxesNumber,
             ],
-            "invoice" => $invoice
+            "invoice" => $invoice,
+            "extra_service" => [
+                "extra_servicecode" => "IO",
+                "extra_servicevalue" => $orderClass->taxesNumber
+            ]
         ];
     }
 }
