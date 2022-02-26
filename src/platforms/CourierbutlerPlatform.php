@@ -228,10 +228,10 @@ class CourierbutlerPlatform extends Platform
 //                "consignee_tariff" => $orderClass->taxesNumber,
             ],
             "invoice" => $invoice,
-            "extra_service" => [
+            "extra_service" => [[
                 "extra_servicecode" => "IO",
                 "extra_servicevalue" => $orderClass->taxesNumber
-            ]
+            ]]
         ];
     }
 }
