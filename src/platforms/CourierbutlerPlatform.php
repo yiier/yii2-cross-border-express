@@ -188,6 +188,15 @@ class CourierbutlerPlatform extends Platform
                 "invoice_material" => $good->enMaterial,
             ];
         }
+        $extraService = [];
+        if (in_array($orderClass->recipient->countryCode, [
+            "AT", "BE", "BG", "CY", "HR", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"
+        ])) {
+            $extraService = [[
+                "extra_servicecode" => "IO",
+                "extra_servicevalue" => $orderClass->taxesNumber
+            ]];
+        }
 
         return [
             'reference_no' => $orderClass->customerOrderNo,
@@ -228,10 +237,7 @@ class CourierbutlerPlatform extends Platform
 //                "consignee_tariff" => $orderClass->taxesNumber,
             ],
             "invoice" => $invoice,
-            "extra_service" => [[
-                "extra_servicecode" => "IO",
-                "extra_servicevalue" => $orderClass->taxesNumber
-            ]]
+            "extra_service" => $extraService,
         ];
     }
 }
