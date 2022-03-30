@@ -224,7 +224,7 @@ class EccangPlatform extends Platform
         foreach ($orderClass->goods as $good) {
             $itemArr[] = [
                 "invoice_cnname" => $good->cnDescription,
-                "invoice_enname" => $good->enMaterial,
+                "invoice_enname" => $good->description,
                 "invoice_weight" => $good->weight,
                 "invoice_quantity" => $good->quantity < 1 ? 1 : intval($good->quantity),
                 "invoice_unitcharge" => $good->worth,
