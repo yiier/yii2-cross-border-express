@@ -206,7 +206,9 @@ class EccangPlatform extends Platform
             "consignee_telephone" => $orderClass->recipient->phone,
             "consignee_postcode" => $orderClass->recipient->zip,
             "consignee_province" => $orderClass->recipient->state,
-            "consignee_city" => $orderClass->recipient->city
+            "consignee_city" => $orderClass->recipient->city,
+            "consignee_email" => $orderClass->recipient->email,
+            "IOSS" => $orderClass->taxesNumber
         ];
 
         $shipper = [

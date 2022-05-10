@@ -10,10 +10,11 @@
 
 namespace platforms;
 
-use yiier\crossBorderExpress\platforms\EccangPlatform;
-use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_TestCase;
+use yiier\crossBorderExpress\Express;
+use yiier\crossBorderExpress\platforms\PlatformsName;
 
-class EccangPlatformTest extends TestCase
+class EccangPlatformTest extends  PHPUnit_Framework_TestCase
 {
     private $config = [
         "timeout" => 60.0,
@@ -47,7 +48,14 @@ class EccangPlatformTest extends TestCase
 
     public function testCreateOrder()
     {
+        $express = new Express($this->config, PlatformsName::ECCANG_PLATFORM);
+        try {
+            $orderResult = $express->createOrder($this->getExpressOrder());
 
+            var_dump($orderResult);
+        } catch (\Exception $e) {
+            $this->expectException($e->getMessage());
+        }
     }
 
     public function testGetClient()
