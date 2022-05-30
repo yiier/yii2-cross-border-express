@@ -19,7 +19,7 @@ use yiier\crossBorderExpress\exceptions\ExpressException;
 class SantaiPlatform extends Platform
 {
 
-    const ENDPOINT = 'http://www.sendfromchina.com/ishipsvc/web-service?wsdl';
+    const ENDPOINT = 'http://www.sfcservice.com/ishipsvc/web-service?wsdl';
 
     /**
      * @var string
@@ -99,7 +99,7 @@ class SantaiPlatform extends Platform
      */
     public function getPrintUrl(string $orderNumber, array $params = []): string
     {
-        $host = 'http://www.sendfromchina.com/api/label';
+        $host = 'http://www.sfcservice.com/api/label';
         $printType = 1;
         $fileType = 'pdf';
 
