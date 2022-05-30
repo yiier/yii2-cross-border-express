@@ -22,9 +22,9 @@ class Yw56PlatformTest extends \PHPUnit_Framework_TestCase
         "timeout" => 60.0,
         "platforms" => [
             \yiier\crossBorderExpress\platforms\PlatformsName::YW56_PLATFORM => [
-                "host" => "http://47.96.220.163:802",
-                "userId" => "100000",
-                "token" => "D6140AA383FD8515B09028C586493DDB",
+                "host" => "http://online.yw56.com.cn",
+                "userId" => "30060893",
+                "token" => "C50886D1314181E59BFB888955B1E13F",
                 "ossBucket" => "",
                 "ossAccessKeyId" => "",
                 "ossAccessKeySecret" => "",
@@ -50,7 +50,7 @@ class Yw56PlatformTest extends \PHPUnit_Framework_TestCase
     {
         $express = new Express($this->config, PlatformsName::YW56_PLATFORM);
         try {
-            $orderResult = $express->getPrintUrl("YH100001468");
+            $orderResult = $express->getPrintUrl("YBLYcgq6000128361926");
 
             var_dump($orderResult);
         } catch (\Exception $e) {
