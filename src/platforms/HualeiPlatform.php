@@ -164,7 +164,7 @@ class HualeiPlatform extends Platform
             ];
         }
 
-        return [
+        $data = [
             "buyerid" => $orderClass->customerOrderNo,
             "consignee_address" => $orderClass->recipient->address,
             "order_piece" => $orderClass->package->quantity,
@@ -203,6 +203,15 @@ class HualeiPlatform extends Platform
             "shipper_taxnotype" => "IOSS",
             "shipper_taxno" => $orderClass->taxesNumber
         ];
+        if (in_array($orderClass->recipient->countryCode, [
+            "AT", "BE", "BG", "CY", "HR", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"
+        ])) {
+
+            $data["shipper_taxnotype"] = "IO";
+            $data["shipper_taxno"] = $orderClass->taxesNumber;
+
+        }
+        return $data;
     }
 
     /**
