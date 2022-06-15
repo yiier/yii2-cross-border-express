@@ -200,14 +200,12 @@ class HualeiPlatform extends Platform
             "shipper_postcode" => $orderClass->shipper->zip,
             "shipper_country" => $orderClass->shipper->countryCode,
             "shipper_telephone" => $orderClass->shipper->phone,
-            "shipper_taxnotype" => "IOSS",
-            "shipper_taxno" => $orderClass->taxesNumber
         ];
         if (in_array($orderClass->recipient->countryCode, [
             "AT", "BE", "BG", "CY", "HR", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"
         ])) {
 
-            $data["shipper_taxnotype"] = "IO";
+            $data["shipper_taxnotype"] = "IOSS";
             $data["shipper_taxno"] = $orderClass->taxesNumber;
 
         }
